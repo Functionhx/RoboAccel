@@ -149,6 +149,21 @@ frozen-base residual-QAT 实验检验。
 * **可证伪性**：若 `qat_v2_fixlr` 的 `yaw_rmse` 仍停在 0.15，
   则 H6 是真实的但**不是**转向失败的充分原因，责任回到 H0 / 残差方案。
 
-### H9 —— 冻结 base + 残差 QAT（goal4.md §4） · **未开始**
+### H9 —— 冻结 base + 残差 QAT（goal4.md §4） · **已设计，未执行**
 
-### H10 —— FP32 教师行为保持（goal4.md §7） · **未开始**
+anchor = W8A8 PTQ 策略（冻结），残差 `alpha*tanh(r_phi(x))`，
+1,126 个可训练参数对 38,825 个冻结参数，末层零初始化使 `t=0` 时
+逐位等于 anchor。设计与硬件映射见
+[`goal4_experiment_designs.md`](goal4_experiment_designs.md) §1。
+
+### H10 —— FP32 教师行为保持（goal4.md §7） · **已设计，未执行**
+
+`L = L_PPO + beta * KL(teacher || student)`，教师为冻结的 `SOLID_FP32_V2`，
+KL 在 **student 自己的** on-policy 状态上计算。设计见同文件 §2。
+
+### 两者共同的先决条件（来自 Goal 5）
+
+**必须带 `--schedule fixed --learning-rate 2.563e-4`。**
+否则残差分支会撞上同一个学习率下限，实验将无法区分
+"方案无效"与"优化器根本没动"。这是 Goal 5 的机制测量反馈给
+Goal 4 实验设计的直接结果。
