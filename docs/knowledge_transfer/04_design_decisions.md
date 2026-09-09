@@ -123,7 +123,15 @@ Codex 自己的 `nominal_three_seed_summary.json` 已经三个种子验证过。
 ## D7 · residual actor 用 CONCAT 融合，而不是新增 ADD 算子
 
 **决策** Codex 最终 promote 的控制器是 `action = base(x) + residual(x)`，
-两条并行 actor 分支。PL 有 GEMM / ELU / NORM / CONCAT，**没有 element-wise ADD**。
+两条并行 actor 分支。
+
+> **更正（审计）**：早前这里写的是"PL 没有 element-wise ADD"。
+> **这句话在 ISA v3 上是错的**——`rl_vector_engine.sv` 的 `OP_AFFINE`
+> 在 a=1、shift=0 时**就是** ADD。
+> 正确的表述是：**当前的 exporter 走不到那条路径**，
+> 它只生成 GEMM / ELU / NORM / CONCAT 描述符。
+> 所以下面的 CONCAT 融合方案依然是正确的工程选择（不需要改 exporter），
+> 但理由是"exporter 覆盖面"，不是"硬件能力"。
 
 **方案** 两条分支都以一个输出 6 维的 GEMM 结尾（输入分别是 32 和 64），
 它们的和恰好等于**在拼接后的倒数第二层激活上做一次 GEMM**：

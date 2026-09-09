@@ -96,7 +96,10 @@ bash qat/scripts/hosttest/build_and_run.sh qat/artifacts/v2/deploy/h7
 
 **检查点**
 - [ ] 能算出 program length、weight words、vector words、MAC
-- [ ] 能识别出**不受支持的算子**（Conv1D、element-wise ADD、attention）
+- [ ] 能识别出**当前 exporter 不生成的算子**（Conv1D、attention）。
+      注意 element-wise ADD **不在此列**：ISA v3 的 `OP_AFFINE`
+      在 a=1、shift=0 时就是 ADD，只是 exporter 目前不生成它。
+      **区分"硬件不支持"和"工具链没接"是这一课的重点。**
 - [ ] 对于 residual actor，能说出融合方案和它引入的新约束
 - [ ] 知道 A4/A5 的 causal Conv1D **为什么不能上板**
 
