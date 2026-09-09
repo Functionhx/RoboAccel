@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+build/
+.venv/
+*.pt
+*.onnx
+*.npz
+artifacts/
+checkpoints/
+logs/
+*.log

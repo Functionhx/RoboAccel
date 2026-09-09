@@ -1,0 +1,192 @@
+#!/usr/bin/env python3
+"""Run a quantized policy through the *Codex* locomotion sequence evaluator.
+
+Companion to eval_quant_robustness.py. `robust_v1` and `locomotion_v2` need
+different evaluators: `evaluate_robustness.py` hardcodes
+`make_env("robust_v1")` and so builds `RobustLeggedRobot`, which has no
+`_reward_body_contact` and dies immediately on a locomotion checkpoint.
+`scripts/evaluate_locomotion.py` builds `sequence_evaluation` instead and
+scores command sequences with contact, support and slip metrics -- the ones
+that actually detect the chassis-support exploit.
+
+The injection seam is identical: the policy class is resolved from module
+globals at call time and the evaluator then calls
+`act_inference(obs, history) -> (actions, latent)`.
+
+goal.md §6 forbids standing up a competing second benchmark, and §31's main
+table is only meaningful if every arm -- FP32, PTQ, QAT, exact integer -- is
+scored by identical code on identical scenarios. So rather than reimplement the
+harness, this rebinds one module global inside
+`plane/wheel_legged_gym/scripts/evaluate_robustness.py` and lets it drive.
+
+The seam is real, not a hack around a hostile interface:
+
+  * the evaluator picks its policy class by name from a dict of module globals,
+    resolved at call time, so rebinding `ActorCriticRobust` substitutes cleanly;
+  * it then calls `model.act_inference(obs, history) -> (actions, latent)`,
+    which is exactly `QuantActorCriticSequence`'s signature.
+
+Codex's file is never modified. Scenarios, metrics, summarisation, seeding,
+episode accounting and output format are all still its own.
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+
+QAT_ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(QAT_ROOT))
+
+import isaacgym  # noqa: F401  must precede torch
+import torch
+
+from hwq.torch_hw import QuantConfig
+from hwq.quant_policy import QuantActorCriticSequence
+
+
+def make_factory(cfg: QuantConfig, use_integer: bool):
+    """Return a class-like callable the evaluator can instantiate."""
+
+    class _Injected(QuantActorCriticSequence):
+        def __init__(self, num_obs, num_critic_obs, num_actions, **kw):
+            kw.pop("encoder_type", None)          # MLP only; A4/A5 are off-datapath
+            kw.pop("class_name", None)
+            super().__init__(num_obs, num_critic_obs, num_actions,
+                             quant=cfg, **kw)
+            self._fixed = None
+            self._use_integer = use_integer
+
+        def load_state_dict(self, state, strict=True):
+            state = dict(state)
+            if "log_std" in state:                # Codex renamed std -> log_std
+                state["std"] = state.pop("log_std").exp()
+            out = super().load_state_dict(state, strict=strict)
+            if self._use_integer:
+                self._fixed = self.to_fixed_ref()
+            return out
+
+        def act_inference(self, observations, observation_history):
+            if not self._use_integer:
+                return super().act_inference(observations, observation_history)
+            # goal.md §23: the arbiter is the integer reference, one sample per
+            # PL sequence, exactly as the board runs it.
+            import numpy as np
+            o = observations.detach().cpu().numpy().astype(np.float32).astype(np.float64)
+            h = observation_history.detach().cpu().numpy().astype(np.float32).astype(np.float64)
+            acts = np.stack([self._fixed(o[i], h[i]) for i in range(o.shape[0])])
+            a = torch.as_tensor(acts, dtype=observations.dtype,
+                                device=observations.device)
+            return a, self.latent if self.latent is not None else \
+                torch.zeros(o.shape[0], self.latent_dim, device=observations.device)
+
+    return _Injected
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(add_help=False)
+    ap.add_argument("--weight-bits", type=int, default=16)
+    ap.add_argument("--act-bits", type=int, default=16)
+    ap.add_argument("--act-fracs", type=Path, default=None,
+                    help="calibrated per-layer activation fracs (required below A16)")
+    ap.add_argument("--integer", action="store_true",
+                    help="run the bit-exact numpy integer reference instead of fake-quant")
+    ap.add_argument("--ideal-rounding", action="store_true",
+                    help="train/evaluate against exact round-half-away-from-zero "
+                         "instead of the RTL's floor semantics (goal.md section 20)")
+    ap.add_argument("--fp32", action="store_true",
+                    help="disable quantization entirely (sanity control)")
+    known, rest = ap.parse_known_args()
+    if known.ideal_rounding:
+        import hwq.torch_hw as _th
+        _th.IDEAL_ROUNDING = True
+
+    if known.fp32:
+        cfg = QuantConfig(quant_weights=False, quant_obs=False,
+                          quant_hidden=False, quant_output=False)
+    else:
+        kw = {}
+        if known.act_fracs:
+            data = json.loads(known.act_fracs.read_text())
+            kw["act_fracs"] = data.get("act_fracs", data)
+            if "obs" in kw["act_fracs"]:
+                kw["obs_frac"] = kw["act_fracs"]["obs"]
+        elif known.act_bits < 16:
+            raise SystemExit(
+                "--act-bits < 16 needs --act-fracs: a fixed Q8.8 grid spans +-128 "
+                "with an LSB of 1/256, which INT8 cannot cover for this network. "
+                "Run scripts/calibrate_act_fracs.py first.")
+        cfg = QuantConfig(weight_bits=known.weight_bits,
+                          act_bits=known.act_bits, **kw)
+
+    # evaluate_locomotion.py lives in the worktree's top-level scripts/, not
+    # inside the package, so it is loaded by path rather than imported.
+    import importlib.util, os
+    ev_path = os.path.join(os.environ["SOLID_WT"], "scripts", "evaluate_locomotion.py")
+    spec = importlib.util.spec_from_file_location("evaluate_locomotion", ev_path)
+    ev = importlib.util.module_from_spec(spec)
+    sys.modules["evaluate_locomotion"] = ev
+    spec.loader.exec_module(ev)
+    injected = make_factory(cfg, known.integer)
+    ev.ActorCriticRobust = injected
+    ev.ActorCriticSequence = injected
+
+    # Same parameter list the evaluator declares under its own __main__, so the
+    # CLI surface and every default stay identical to a native invocation.
+    # Read the evaluator's OWN parameter list out of its source rather than
+    # duplicating it. Codex is actively developing this file -- it grew
+    # --replay_output after this wrapper was written, and a stale copy fails at
+    # the point of use with an AttributeError deep inside evaluate().
+    import ast as _ast
+    TYPES = {"str": str, "float": float, "int": int, "bool": bool}
+
+    def _entry(dict_node):
+        """One {\"name\": ..., \"type\": str, ...} literal -> a dict.
+
+        ast.unparse is 3.9+, and this runs on the 3.8 Isaac env, so the dict is
+        walked by hand. `type` is a bare Name (str/float/int) rather than a
+        literal, which literal_eval cannot represent either.
+        """
+        out = {}
+        for k, v in zip(dict_node.keys, dict_node.values):
+            key = k.value if isinstance(k, _ast.Constant) else None
+            if key is None:
+                continue
+            if isinstance(v, _ast.Name):
+                out[key] = TYPES.get(v.id, v.id)
+            else:
+                try:
+                    out[key] = _ast.literal_eval(v)
+                except ValueError:
+                    pass
+        return out
+
+    tree = _ast.parse(Path(ev_path).read_text())
+    params = None
+    for node in _ast.walk(tree):
+        if (isinstance(node, _ast.Call)
+                and getattr(node.func, "id", "") == "get_args"
+                and node.args and isinstance(node.args[0], _ast.List)):
+            params = [_entry(d) for d in node.args[0].elts
+                      if isinstance(d, _ast.Dict)]
+            break
+    if not params:
+        raise SystemExit(f"could not find get_args([...]) in {ev_path}")
+    parameters = params
+
+    from wheel_legged_gym.utils import get_args
+    sys.argv = [sys.argv[0]] + rest
+    args = get_args(parameters)
+    # evaluate_locomotion.py names its entry point evaluate(), not main(), and
+    # validates these two invariants under its own __main__ before calling it.
+    if not 0 <= args.measurement_settle_seconds < args.segment_seconds:
+        raise SystemExit("measurement settling must be shorter than each segment")
+    if min(args.delay_steps, args.sensor_delay_steps) < 0:
+        raise SystemExit("delays must be nonnegative")
+    return ev.evaluate(args)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
