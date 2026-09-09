@@ -229,8 +229,35 @@ W8A8 responds as `|dw|^0.54` against float's `|dw|^2.00`.
 
 > *Inference.* The controller's only lever moves the quantity it regulates with
 > an exponent of ~0.5 instead of 2. Reducing the learning rate by 10× reduces
-> the measured KL by ~3.5× under W8A8, against 100× in float. This is why the
-> rate reached its floor and stayed there.
+> the measured KL by ~3.5× under W8A8, against 100× in float.
+
+**Refinement — flatness alone is not the discriminator.** Fitting the exponent
+for every arm on the QAT checkpoint:
+
+| arm | exponent, ±lr steps | exponent, Gaussian steps |
+|---|---:|---:|
+| float | **1.99** | **1.99** |
+| W16A16 | 0.54 | 0.55 |
+| W8A16 | 0.61 | 0.61 |
+| W8A8 | 0.54 | 0.52 |
+| W4A8 | 0.51 | 0.60 |
+
+**Every quantized arm is flat**, including the two that train perfectly well.
+So the sub-quadratic response is a property of quantization in general, and it
+is *necessary but not sufficient* for the collapse. What separates W8A8 is the
+**absolute level** of its floor against the fixed 0.01 threshold, not the shape
+of its curve. Both facts are needed: the floor sits above the threshold, *and*
+the controller cannot lower it.
+
+> An earlier draft of this section attributed the collapse to the exponent
+> alone. That was wrong, and the W16A16 column is what shows it.
+
+**Robustness — the exponent is not an artifact of the step model.** The table
+above repeats the whole sweep with `dw ~ N(0, lr²)` instead of `dw = ±lr`, so
+a weight sitting just inside a boundary is no longer guaranteed either to cross
+it or not to. Float stays at 1.99; W8A8 moves from 0.54 to 0.52. The flatness
+is the quantizer, not the sign structure. **This retires uncertainty 4 below.**
+Reproduce with `--perturbation gauss`.
 
 **Observation 3 — there is a dead zone.** On the FP32 checkpoint at
 `|dw| = 1e-7`, **0.0** weight codes move and KL is **exactly 0**. On the QAT
@@ -312,10 +339,12 @@ is predictive: it is obtained from one forward pass, with no training run.
 3. **One model, one task.** The exponent 0.54 and the ~70× activation
    amplification are properties of this 38,400-MAC policy on `locomotion_v2`.
    Nothing here shows they generalise.
-4. **The perturbation is isotropic, not a real gradient.** `|dw| ≈ lr`
-   elementwise with random signs models an Adam step with unit-RMS gradients.
-   A real gradient is correlated across weights and could cross a different
-   number of boundaries.
+4. **The perturbation is isotropic, not a real gradient.** ~~`|dw| ≈ lr`
+   elementwise with random signs models an Adam step with unit-RMS
+   gradients.~~ **Substantially retired**: repeating the sweep with Gaussian
+   steps of the same RMS changes the W8A8 exponent from 0.54 to 0.52 and
+   leaves float at 1.99. What remains open is *correlation* — a real gradient
+   is correlated across weights, and neither step model reproduces that.
 5. **The encoder is out of scope of the perturbation study.** It is stepped by a
    *separate* optimizer at a fixed 1e-3 that the adaptive controller never
    touches (`ppo.py` writes only `self.optimizer.param_groups`), and its

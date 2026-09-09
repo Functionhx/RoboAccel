@@ -153,6 +153,11 @@ perturbation magnitude, float KL rises **6.19e6×** — exactly quadratic, as a
 smooth function must. W8A8 rises **68×**. The lever barely moves the quantity
 it is supposed to regulate.
 
+That flatness is common to *every* quantized configuration, including the two
+that train fine — so it is necessary but not sufficient. What singles out W8A8
+is that its noise floor sits **above** the controller's fixed threshold while
+the others sit well below it. Both facts are needed.
+
 **W8A16 and W8A8 have the same 8-bit weights and cross the same number of
 quantization boundaries under the same perturbation — measured, not assumed —
 yet their KL differs by ~70×.** The amplifier is the activation path.

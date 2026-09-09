@@ -92,15 +92,33 @@ def kl_of(mu0, mu1, sigma):
     return float((((mu0 - mu1) ** 2) / (2.0 * sigma ** 2)).sum(-1).mean())
 
 
-def perturb_(net, lr, gen):
-    """One Adam step with unit-RMS gradients: dw = -lr * sign(g), elementwise."""
+def perturb_(net, lr, gen, kind="sign"):
+    """Perturb the stepped parameters by a step of scale `lr`.
+
+    Two models, because the conclusion should not depend on which one is used:
+
+      sign   dw = +-lr elementwise. This is an Adam step with unit-RMS
+             gradients -- Adam divides by the gradient RMS, so a consistent
+             gradient of any magnitude produces a step of size lr.
+      gauss  dw ~ N(0, lr^2) elementwise. Same RMS, but the magnitudes vary,
+             so a weight sitting just inside a quantization boundary is no
+             longer guaranteed either to cross it or not to.
+
+    If the measured scaling exponent is a property of the quantizer rather
+    than of the sign structure, both must give the same answer.
+    """
     saved = {}
     for name, p in net.named_parameters():
         if not any(name.startswith(s) for s in STEPPED):
             continue
         saved[name] = p.detach().clone()
-        step = (torch.randint(0, 2, p.shape, generator=gen,
-                              dtype=torch.float32) * 2.0 - 1.0) * lr
+        if kind == "sign":
+            step = (torch.randint(0, 2, p.shape, generator=gen,
+                                  dtype=torch.float32) * 2.0 - 1.0) * lr
+        elif kind == "gauss":
+            step = torch.randn(p.shape, generator=gen) * lr
+        else:
+            raise SystemExit(f"unknown perturbation kind {kind!r}")
         p.data.add_(step)
     return saved
 
@@ -118,6 +136,9 @@ def main() -> int:
     ap.add_argument("--act-fracs", default=str(QUANT_ROOT / "artifacts/v2/act_fracs_a8.json"))
     ap.add_argument("--samples", type=int, default=4096)
     ap.add_argument("--trials", type=int, default=8)
+    ap.add_argument("--perturbation", default="sign",
+                    choices=["sign", "gauss"],
+                    help="step model; see perturb_()")
     ap.add_argument("--lrs", default="1e-6,1e-5,1e-4,2.56e-4,1e-3")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
@@ -146,6 +167,7 @@ def main() -> int:
            "obs_file": a.obs, "act_fracs_file": a.act_fracs,
            "samples": int(obs.shape[0]), "trials": a.trials,
            "stepped_prefixes": list(STEPPED),
+           "perturbation": a.perturbation,
            "desired_kl": DESIRED_KL,
            "kl_decrease_threshold": DESIRED_KL * 2.0,
            "lr_floor": 1e-5,
@@ -161,7 +183,7 @@ def main() -> int:
             kls, dmus, crossed = [], [], []
             for t in range(a.trials):
                 gen = torch.Generator().manual_seed(1000 + t)
-                saved = perturb_(net, lr, gen)
+                saved = perturb_(net, lr, gen, a.perturbation)
                 mu1 = action_mean(net, obs, hist)
                 kls.append(kl_of(mu0, mu1, sigma))
                 dmus.append(float((mu1 - mu0).abs().mean()))
