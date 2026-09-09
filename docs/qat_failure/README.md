@@ -13,6 +13,7 @@ mechanism, the causal chain, and the English formulation for citation.
 | [`goal4_hypotheses.md`](goal4_hypotheses.md) | Every hypothesis with its prediction, test, and verdict — including seven that were falsified |
 | [`goal4_experiment_log.md`](goal4_experiment_log.md) | Chronological log; each entry records what it *ruled out* |
 | [`goal4_results.md`](goal4_results.md) | Result tables |
+| [`goal5_mechanism_confirmation.md`](goal5_mechanism_confirmation.md) | The perturbation-response study: KL vs weight step size, the dead zone, and the control that isolates activation width from weight width |
 | [`collect_results.py`](collect_results.py) | Regenerates the tables from each run's own `metrics.jsonl` — no hand transcription |
 
 The one-line version:
