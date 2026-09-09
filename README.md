@@ -77,8 +77,15 @@ measured, reproduced, estimated, or hypothesis. Retractions are listed there too
 The network topology is **not** hardcoded in RTL. The PS writes a program of
 operator descriptors into a 32×128-bit instruction RAM, and a hardware sequencer
 executes the whole network from a single register write. Deploying a different
-policy means re-exporting cache images and a descriptor program — not rewriting
-RTL.
+policy is meant to be a re-export of cache images and a descriptor program
+rather than an RTL change.
+
+> **Verified for the deployed policy; not yet demonstrated for a second one.**
+> A release audit exported a different checkpoint with identical topology — the
+> descriptor program came out structurally identical, and all three software
+> implementations agreed bit-exactly — but the RTL simulation disagreed. The
+> defect is open and localized to the RTL. See
+> [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) §4.
 
 ---
 
@@ -323,6 +330,7 @@ Sources: [`docs/knowledge_transfer/06_failed_hypotheses.md`](docs/knowledge_tran
 | Document | Contents |
 | --- | --- |
 | [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Canonical artifacts, the interface between each pair of components, known fragile boundaries |
+| [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) | Full chain re-run from a clean clone, what could not be run, and the one open defect it found |
 | [`docs/EVIDENCE.md`](docs/EVIDENCE.md) | Every README claim traced to a source and graded, plus retractions |
 | [`docs/QAT_RESULTS.md`](docs/QAT_RESULTS.md) | Full quantization results with evidence grading |
 | [`docs/qat_failure/`](docs/qat_failure/) | The W8A8 research record: mechanism, hypothesis ledger, experiment log |

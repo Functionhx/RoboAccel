@@ -8,8 +8,8 @@ arithmetic mismatch to be located, not a tolerance to be widened.
 
   A  roboaccel_quant/torch_hw.py            torch fake-quant (what QAT trained against)
   B  roboaccel_quant/fixed_ref.py           numpy int64 reference
-  C  tools/export_policy.py     the shipped FPGA exporter's fixed_inference
-  D  tools/fixed_policy.py      the shipped H7/FPGA closed-loop model
+  C  fpga/tools/export_policy.py     the shipped FPGA exporter's fixed_inference
+  D  fpga/tools/fixed_policy.py      the shipped H7/FPGA closed-loop model
 """
 from __future__ import annotations
 
@@ -19,10 +19,10 @@ from pathlib import Path
 import numpy as np
 import torch
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-RL_ACCEL = QAT_ROOT.parent
-sys.path.insert(0, str(QAT_ROOT))
-sys.path.insert(0, str(RL_ACCEL / "tools"))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+REPO = QUANT_ROOT.parent
+sys.path.insert(0, str(QUANT_ROOT))
+sys.path.insert(0, str(REPO / "fpga" / "tools"))
 
 from roboaccel_quant.fixed_ref import ACT_FRAC  # noqa: E402
 from roboaccel_quant.quant_policy import build_from_onnx  # noqa: E402

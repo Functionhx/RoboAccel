@@ -122,6 +122,22 @@ Kept here on purpose. See the README's *"What this project got wrong"*.
 
 ---
 
+## Reproduced from a clean clone (2026-09-09, commit `8d1d1b9`)
+
+Every row of the verification table above was re-run against a fresh
+`git clone` of the published repository, not the working tree. See
+[`RELEASE_CANDIDATE.md`](RELEASE_CANDIDATE.md) for the commands and output.
+`BIT_EXACT: PASS` (9/9 tensors, 4000 samples), `CROSS_VALIDATION: PASS` (three
+implementations bit-identical), `tb_policy_e2e` PASS at 1,799 cycles,
+`H7_HOST_CHECK: PASS` (0/24 mismatches, ELU ROM 0/256 differing), and the STM32
+codegen reports 38,400 MAC.
+
+## Open defect affecting a claim
+
+| Claim | Status |
+|---|---|
+| "Deploying a different policy is a re-export, not an RTL change" | **Design intent, not demonstrated.** A second checkpoint with identical topology produces a structurally identical descriptor program and is bit-identical across all three software implementations, yet the RTL simulation disagrees on all six actions. Open, localized to the RTL, not worked around. `RELEASE_CANDIDATE.md` §4 |
+
 ## Provenance boundaries
 
 * `fudan_policy.onnx` is a **historical filename, not upstream Fudan weights**.
