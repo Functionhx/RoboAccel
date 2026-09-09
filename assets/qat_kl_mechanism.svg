@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 400" width="900" height="400" font-family="Helvetica,Arial,sans-serif">
+<rect width="900" height="400" fill="#ffffff"/>
+<style>.hdr{font-size:12px;fill:#888;letter-spacing:1.5px}.ax{font-size:11px;fill:#666}.lbl{font-size:12px;fill:#111}.val{font-size:11px;fill:#111;font-weight:600}.tag{font-size:11px;fill:#666}.mono{font-size:11px;fill:#111;font-family:ui-monospace,Menlo,Consolas,monospace}</style>
+<text x="20" y="30" class="hdr">WHY W8A8 QAT NEVER TRAINED — QUANTIZATION KL NOISE FLOOR vs CONTROLLER THRESHOLD</text>
+<line x1="20" y1="40" x2="880" y2="40" stroke="#ddd"/>
+<text x="20" y="60" class="tag">Policy KL produced by ONE Adam step at the learning-rate floor (lr = 1e-5), same parameters, same observations.</text>
+<line x1="130" y1="310.0" x2="750" y2="310.0" stroke="#eee"/>
+<text x="120" y="314.0" class="ax" text-anchor="end">1e-7</text>
+<line x1="130" y1="277.1" x2="750" y2="277.1" stroke="#eee"/>
+<text x="120" y="281.1" class="ax" text-anchor="end">1e-6</text>
+<line x1="130" y1="244.3" x2="750" y2="244.3" stroke="#eee"/>
+<text x="120" y="248.3" class="ax" text-anchor="end">1e-5</text>
+<line x1="130" y1="211.4" x2="750" y2="211.4" stroke="#eee"/>
+<text x="120" y="215.4" class="ax" text-anchor="end">1e-4</text>
+<line x1="130" y1="178.6" x2="750" y2="178.6" stroke="#eee"/>
+<text x="120" y="182.6" class="ax" text-anchor="end">1e-3</text>
+<line x1="130" y1="145.7" x2="750" y2="145.7" stroke="#eee"/>
+<text x="120" y="149.7" class="ax" text-anchor="end">1e-2</text>
+<line x1="130" y1="112.9" x2="750" y2="112.9" stroke="#eee"/>
+<text x="120" y="116.9" class="ax" text-anchor="end">1e-1</text>
+<line x1="130" y1="80.0" x2="750" y2="80.0" stroke="#eee"/>
+<text x="120" y="84.0" class="ax" text-anchor="end">1e0</text>
+<line x1="130" y1="145.7" x2="750" y2="145.7" stroke="#c1440e" stroke-width="1.6"/>
+<text x="758" y="139.7" class="tag" fill="#c1440e">controller throttles</text>
+<text x="758" y="155.7" class="tag" fill="#c1440e">above KL 0.01</text>
+<line x1="192.0" y1="310" x2="192.0" y2="290.0" stroke="#2c5f8a" stroke-width="1"/>
+<circle cx="192.0" cy="290.0" r="5.5" fill="#2c5f8a"/>
+<text x="192.0" y="277.0" class="val" fill="#2c5f8a" text-anchor="middle">4.06e-07</text>
+<text x="192.0" y="330" class="lbl" text-anchor="middle">float</text>
+<text x="192.0" y="347" class="tag" fill="#2c5f8a" text-anchor="middle">QAT works</text>
+<line x1="316.0" y1="310" x2="316.0" y2="206.3" stroke="#2c5f8a" stroke-width="1"/>
+<circle cx="316.0" cy="206.3" r="5.5" fill="#2c5f8a"/>
+<text x="316.0" y="193.3" class="val" fill="#2c5f8a" text-anchor="middle">1.44e-04</text>
+<text x="316.0" y="330" class="lbl" text-anchor="middle">W16A16</text>
+<text x="316.0" y="347" class="tag" fill="#2c5f8a" text-anchor="middle">QAT works</text>
+<line x1="440.0" y1="310" x2="440.0" y2="180.4" stroke="#2c5f8a" stroke-width="1"/>
+<circle cx="440.0" cy="180.4" r="5.5" fill="#2c5f8a"/>
+<text x="440.0" y="167.4" class="val" fill="#2c5f8a" text-anchor="middle">8.78e-04</text>
+<text x="440.0" y="330" class="lbl" text-anchor="middle">W8A16</text>
+<text x="440.0" y="347" class="tag" fill="#2c5f8a" text-anchor="middle">QAT works</text>
+<line x1="564.0" y1="310" x2="564.0" y2="118.5" stroke="#c1440e" stroke-width="1"/>
+<circle cx="564.0" cy="118.5" r="5.5" fill="#c1440e"/>
+<text x="564.0" y="105.5" class="val" fill="#c1440e" text-anchor="middle">6.73e-02</text>
+<text x="564.0" y="330" class="lbl" text-anchor="middle">W8A8</text>
+<text x="564.0" y="347" class="tag" fill="#c1440e" text-anchor="middle">QAT fails</text>
+<line x1="688.0" y1="310" x2="688.0" y2="136.3" stroke="#c1440e" stroke-width="1"/>
+<circle cx="688.0" cy="136.3" r="5.5" fill="#c1440e"/>
+<text x="688.0" y="123.3" class="val" fill="#c1440e" text-anchor="middle">1.94e-02</text>
+<text x="688.0" y="330" class="lbl" text-anchor="middle">W4A8</text>
+<text x="688.0" y="347" class="tag" fill="#c1440e" text-anchor="middle">QAT fails</text>
+<line x1="130" y1="310" x2="750" y2="310" stroke="#333"/>
+<line x1="20" y1="330" x2="880" y2="330" stroke="#ddd"/>
+<text x="20" y="350" class="tag">Fake-quant makes the policy a discontinuous function of its weights, so PPO's adaptive learning-rate controller reads quantization noise as policy divergence</text>
+<text x="20" y="367" class="tag">and cuts the learning rate. In the W8A8 run it stayed at the 1e-5 floor for 2000 of 2000 iterations; the FP32 control, 10 of 2000.</text>
+<text x="20" y="384" class="tag">Source: docs/results/kl_amplification_qat.json · docs/results/goal4_results.json</text>
+</svg>

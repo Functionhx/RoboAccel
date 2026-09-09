@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 340" width="900" height="340" font-family="Helvetica,Arial,sans-serif">
+  <rect width="900" height="340" fill="#ffffff"/>
+  <defs>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2c5f8a"/>
+    </marker>
+    <style>
+      .box{fill:#fff;stroke:#333;stroke-width:1.2}
+      .sil{fill:#fff;stroke:#c1440e;stroke-width:1.6}
+      .ttl{font-size:13px;fill:#111;font-weight:600}
+      .sub{font-size:11px;fill:#444}
+      .ok{font-size:11px;fill:#2c5f8a;font-family:ui-monospace,Menlo,Consolas,monospace}
+      .hdr{font-size:12px;fill:#888;letter-spacing:1.5px}
+      .tag{font-size:11px;fill:#666}
+      .ln{stroke:#2c5f8a;stroke-width:1.2;fill:none}
+    </style>
+  </defs>
+  <text x="20" y="30" class="hdr">VERIFICATION CHAIN — FIVE IMPLEMENTATIONS, ONE ARITHMETIC</text>
+  <line x1="20" y1="40" x2="880" y2="40" stroke="#ddd"/>
+
+  <rect x="330" y="60" width="230" height="52" rx="3" class="box" stroke="#2c5f8a"/>
+  <text x="344" y="82" class="ttl">Golden vectors</text>
+  <text x="344" y="100" class="sub">24 cases · 4000 calibration samples</text>
+
+  <rect x="20" y="165" width="160" height="76" rx="3" class="box"/>
+  <text x="34" y="187" class="ttl">PyTorch fake-quant</text>
+  <text x="34" y="205" class="sub">float64 GPU emulation</text>
+  <text x="34" y="225" class="ok">9/9 tensors exact</text>
+
+  <rect x="200" y="165" width="160" height="76" rx="3" class="box"/>
+  <text x="214" y="187" class="ttl">NumPy integer ref</text>
+  <text x="214" y="205" class="sub">the arbiter</text>
+  <text x="214" y="225" class="ok">definition of truth</text>
+
+  <rect x="380" y="165" width="160" height="76" rx="3" class="box"/>
+  <text x="394" y="187" class="ttl">FPGA descriptors</text>
+  <text x="394" y="205" class="sub">independent exporter</text>
+  <text x="394" y="225" class="ok">13 instr · 7 fracs</text>
+
+  <rect x="560" y="165" width="150" height="76" rx="3" class="sil"/>
+  <text x="574" y="187" class="ttl">STM32 scalar C</text>
+  <text x="574" y="205" class="sub">on silicon</text>
+  <text x="574" y="225" class="ok">0 mismatches</text>
+
+  <rect x="730" y="165" width="150" height="76" rx="3" class="sil"/>
+  <text x="744" y="187" class="ttl">STM32 SMLALD</text>
+  <text x="744" y="205" class="sub">on silicon</text>
+  <text x="744" y="225" class="ok">0 mismatches</text>
+
+  <path class="ln" d="M400,112 V140 H100 V160" marker-end="url(#b)"/>
+  <path class="ln" d="M420,112 V140 H280 V160" marker-end="url(#b)"/>
+  <path class="ln" d="M445,112 V160" marker-end="url(#b)"/>
+  <path class="ln" d="M470,112 V140 H635 V160" marker-end="url(#b)"/>
+  <path class="ln" d="M490,112 V140 H805 V160" marker-end="url(#b)"/>
+
+  <line x1="20" y1="275" x2="880" y2="275" stroke="#ddd"/>
+  <text x="20" y="296" class="tag">Red outline = verified on physical hardware. The FPGA exporter shares no code with the quantization library;</text>
+  <text x="20" y="313" class="tag">it independently derives the identical instruction program and the identical per-layer scales.</text>
+  <text x="20" y="330" class="tag">The requantizer's floor-after-half-LSB rounding is reproduced deliberately, not corrected — silicon is the reference.</text>
+</svg>

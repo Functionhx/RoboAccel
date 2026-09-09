@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 300" width="960" height="300" font-family="Helvetica,Arial,sans-serif">
+  <rect width="960" height="300" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#555"/>
+    </marker>
+    <style>
+      .box{fill:#fff;stroke:#333;stroke-width:1.2}
+      .tag{font-size:11px;fill:#666}
+      .ttl{font-size:14px;fill:#111;font-weight:600}
+      .sub{font-size:11px;fill:#444}
+      .art{font-size:11px;fill:#2c5f8a;font-family:ui-monospace,Menlo,Consolas,monospace}
+      .ln{stroke:#555;stroke-width:1.2;fill:none}
+      .hdr{font-size:12px;fill:#888;letter-spacing:1.5px}
+    </style>
+  </defs>
+
+  <text x="20" y="30" class="hdr">FROM RL POLICY TO REAL-TIME SILICON</text>
+  <line x1="20" y1="40" x2="940" y2="40" stroke="#ddd" stroke-width="1"/>
+
+  <!-- 1 training -->
+  <rect x="20" y="70" width="180" height="90" rx="3" class="box"/>
+  <text x="34" y="94" class="ttl">1 · RL training</text>
+  <text x="34" y="114" class="sub">Isaac Gym · PPO</text>
+  <text x="34" y="130" class="sub">actor + encoder + critic</text>
+  <text x="34" y="150" class="art">model_N.pt</text>
+
+  <!-- 2 quantization -->
+  <rect x="255" y="70" width="200" height="90" rx="3" class="box"/>
+  <text x="269" y="94" class="ttl">2 · Quantization</text>
+  <text x="269" y="114" class="sub">calibrate act scales</text>
+  <text x="269" y="130" class="sub">fake-quant / QAT · verify</text>
+  <text x="269" y="150" class="art">policy_map.json</text>
+
+  <!-- fan out -->
+  <rect x="520" y="40" width="200" height="90" rx="3" class="box"/>
+  <text x="534" y="64" class="ttl">3a · RoboAccel FPGA</text>
+  <text x="534" y="84" class="sub">Zynq-7000 · PL 100 MHz</text>
+  <text x="534" y="100" class="sub">descriptor sequencer</text>
+  <text x="534" y="120" class="art">*.hex + 13 descriptors</text>
+
+  <rect x="520" y="170" width="200" height="90" rx="3" class="box"/>
+  <text x="534" y="194" class="ttl">3b · STM32H723</text>
+  <text x="534" y="214" class="sub">480 MHz · SMLALD · DTCM</text>
+  <text x="534" y="230" class="sub">scalar + SIMD kernels</text>
+  <text x="534" y="250" class="art">rl_policy_data.c</text>
+
+  <!-- verification -->
+  <rect x="775" y="70" width="165" height="90" rx="3" class="box" stroke="#2c5f8a"/>
+  <text x="789" y="94" class="ttl">4 · Verification</text>
+  <text x="789" y="114" class="sub">one golden vector set</text>
+  <text x="789" y="130" class="sub">bit-exact across all</text>
+  <text x="789" y="150" class="sub">five implementations</text>
+
+  <path class="ln" d="M200,115 H250" marker-end="url(#a)"/>
+  <path class="ln" d="M455,115 H480 V85 H515" marker-end="url(#a)"/>
+  <path class="ln" d="M455,115 H480 V215 H515" marker-end="url(#a)"/>
+  <path class="ln" d="M720,85 H750 V115 H770" marker-end="url(#a)"/>
+  <path class="ln" d="M720,215 H750 V115 H770" marker-end="url(#a)"/>
+
+  <text x="205" y="108" class="tag">float weights</text>
+  <text x="460" y="72" class="tag">INT16</text>
+  <text x="460" y="205" class="tag">INT16</text>
+
+  <line x1="20" y1="278" x2="940" y2="278" stroke="#ddd" stroke-width="1"/>
+  <text x="20" y="294" class="tag">Q8.8 activations · per-GEMM INT16 weight fractional bits · INT48 accumulate · one arithmetic definition shared by every stage</text>
+</svg>

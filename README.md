@@ -10,6 +10,8 @@ Train a reinforcement-learning controller, quantize it, verify it **bit-exactly*
 against the hardware it will run on, and deploy it to an FPGA accelerator or a
 Cortex-M7 — through one reproducible stack.
 
+<img src="assets/pipeline.svg" alt="RoboAccel pipeline: RL training to quantization to FPGA and STM32, with a shared verification chain" width="100%">
+
 </div>
 
 ---
@@ -54,6 +56,9 @@ STM32 obs→action end-to-end: 260.82 µs. 3.25 cycles/MAC.
 
 **Five independent implementations agree bit-exactly** on the same weights:
 
+<img src="assets/verification_chain.svg" alt="Five implementations checked against one integer reference; two verified on silicon" width="100%">
+
+
 | Implementation | Verified |
 |---|---|
 | PyTorch fake-quant | 9/9 tensors exact, 4000 samples |
@@ -78,6 +83,8 @@ three training seeds, evaluated closed-loop.
 | W8A8 | 0.000–0.164 | 0.915–0.950 | 39,631 |
 | W4A8 | 0.000 | 0.239 | 20,431 |
 
+<img src="assets/precision_cliff.svg" alt="Per-segment control success by precision; FP32, W16A16 and W8A16 all 1.000, W8A8 and W4A8 collapse" width="100%">
+
 **The quantization cliff is exactly at 8-bit activations.** INT8 weights are
 free; INT8 activations are not.
 
@@ -86,16 +93,54 @@ free; INT8 activations are not.
 > weights** — shipping W8A16 requires adding a bit-width parameter to the export
 > path first. See `docs/QAT_RESULTS.md`.
 
-### Research observation — not a deployment claim
+### Why QAT fails at W8A8 — measured
 
 At W8A8, quantization-aware training reliably restores **wheel support**
 (95–100% recovery, three seeds) and substantially restores straight-line
 locomotion (39–84%, seed-dependent), but **never restores turning**
 (0.000 across all seeds — worse than plain PTQ).
 
-Localization shows why: the QAT parameters score **0.000 in floating-point
-execution** — they do not encode a quantization-tolerant policy, they encode a
-policy that *requires* the quantizer. See `docs/01_localization.md`.
+**The reason is not that 8-bit activations cannot represent the policy. It is
+that 8-bit activations break the training algorithm's ability to control its own
+step size.**
+
+<img src="assets/qat_kl_mechanism.svg" alt="Quantization KL noise floor by precision against the PPO controller threshold; only W8A8 and W4A8 exceed it" width="100%">
+
+PPO adapts its learning rate from the measured policy KL — if KL is too large,
+take smaller steps. That control loop assumes KL is monotone in step size.
+Under fake-quant it is not: a weight step below one quantization LSB changes
+nothing, while a step that crosses an LSB boundary snaps that weight by a whole
+LSB. So the measured KL is set by how many weights happened to cross a
+boundary, and **lowering the learning rate does not lower it**.
+
+| | W8A8 QAT | FP32 control |
+|---|---|---|
+| Learning rate at its 1e-5 floor | **2000 / 2000 iterations** | 10 / 2000 |
+| Median measured policy KL | 0.0650 | 0.0054 |
+| Iterations above the controller's 0.01 threshold | **100%** | 0.1% |
+| Reward at convergence | 28.64 | 29.30 |
+
+One 1e-5 weight step — the algorithm's own floor — produces a policy KL of
+**6.73e-02** under W8A8 fake-quant against **4.06e-07** in float: **165,737×**.
+That is 6.7× the controller's threshold *at zero effective learning rate*, so
+the rate was driven to the floor and never rose again.
+
+Three consequences, all measured:
+
+- **QAT never repaired anything.** Turning was already broken at iteration 1
+  (yaw RMSE 0.1468) and was no better after 2000 iterations (0.1566).
+- **Reward shaping cannot help.** Raising the yaw reward 2× and 4× scaled its
+  contribution exactly 2.00× and 4.00× and moved yaw RMSE by 0.8%. You cannot
+  steer an optimizer that cannot step.
+- **The training curve looked healthy the whole time.** Reward 28.64 vs the
+  control's 29.30. Only the learning-rate trace shows the failure.
+
+**W8A8 is the only precision on the ladder whose quantization KL floor exceeds
+the controller's threshold — and the only one where QAT fails.** The noise floor
+predicts trainability from a single forward pass, with no training run at all.
+
+See [`docs/qat_failure/`](docs/qat_failure/) for the complete research record
+and `docs/01_localization.md`. Full evidence grading: `docs/EVIDENCE.md`.
 
 ## Quick start
 
@@ -154,6 +199,9 @@ docs/           knowledge_transfer/ (13 documents), results, deployment mapping
 | `docs/QAT_RESULTS.md` | Full results with evidence grading and retractions |
 | `docs/SOLID_POLICY_DEPLOYMENT_MAPPING.md` | Layer-by-layer policy → accelerator mapping |
 | `docs/REPRODUCE_QAT.md` | Reproduction recipe |
+| `docs/EVIDENCE.md` | **Every README claim traced to a source and classified** measured / reproduced / estimated / hypothesis, plus retractions |
+| `docs/ARCHITECTURE.md` | Canonical artifacts, interfaces between the four components, and known fragile boundaries |
+| `docs/results/` | The raw JSON behind the figures and tables |
 
 The knowledge-transfer documents are written in Chinese with English technical
 terminology and identifiers preserved.
@@ -169,6 +217,12 @@ Kept deliberately, because negative results are results:
   13%; leave-one-out then refuted any single-layer explanation.
 - **"The requantizer's rounding bias causes the turning failure"** — retraining
   against a corrected requantizer left turning at exactly 0.000.
+- **"The yaw reward is starved, so rebalance it"** — quadrupling it moved yaw
+  RMSE by 0.8%. The optimizer was pinned at its learning-rate floor the whole
+  time; no objective change could have mattered.
+- **"QAT beats FP32"** — it did on numerical MSE (0.1334 vs 0.2898). Control
+  metrics reached 0.0657. The gain was extra training, not quantization
+  awareness. **MSE is not evidence of control quality.**
 
 See `docs/knowledge_transfer/06_failed_hypotheses.md`.
 
