@@ -298,42 +298,92 @@ This is the cleanest support for **Hypothesis B** available without waiting for
 training, and it is a *sensitivity* result rather than a *trainability* result —
 the running `qat_v2_w8a16` arm tests the trainability half.
 
-## 4. Hypothesis A — does fixed LR rescue W8A8?
+## 4. Hypothesis A — does fixed LR rescue W8A8?  **NO — falsified**
 
-**Not yet answered.** `qat_v2_fixlr` is running. The prediction, recorded before
-the result, so it can fail:
+`qat_v2_fixlr` completed 2000/2000. The intervention worked exactly as
+intended: learning rate constant at **2.563e-4** (min == max over all 2000
+iterations), **0.0%** of iterations at the floor, against the baseline's
+100.0%. The optimizer could step, and was verified in the optimizer at
+construction.
 
-* If the mechanism is the dominant cause, `yaw_rmse_rad_s` should move away
-  from ~0.153 toward the FP32 control's ~0.058.
-* If it stays at ~0.15 with a verified 2.563e-4 step size, then the LR collapse
-  is **real but not sufficient**, and responsibility returns to policy capacity
-  or to the frozen-base residual hypothesis.
+**Turning did not come back.**
 
-Interim data is deliberately not interpreted here: at ~180/2000 iterations the
-arm has not had the opportunity to show either outcome.
+| arm | forward | reverse | turn_L | turn_R | stop | height | combined | **mean** |
+|---|---|---|---|---|---|---|---|---|
+| FP32 control | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | **1.000** |
+| PTQ W8A8 | 0.000 | 0.000 | 0.758 | 0.523 | 0.984 | 0.539 | 0.000 | 0.401 |
+| QAT W8A8 baseline | 1.000 | 0.570 | **0.000** | **0.000** | 0.938 | 1.000 | 0.000 | 0.501 |
+| **QAT W8A8 fixed-LR** | 0.984 | 0.438 | **0.000** | **0.000** | 0.023 | 0.000 | 0.000 | **0.206** |
 
-## 5. Hypothesis B — does W8A16 restore adaptive-LR training?
+`yaw_rmse_rad_s` on the turning segments: baseline 0.2371 / 0.2766, fixed-LR
+**0.2470 / 0.2545**, against the FP32 control's 0.0224 / 0.0295.
 
-**Sensitivity half: supported** (Observation 4, and the ladder below).
-**Trainability half: in progress** (`qat_v2_w8a16`).
+> **The hypothesis is falsified, and the result is worse than the null.**
+> Fixed LR did not merely fail to restore turning — overall success fell from
+> 0.501 to **0.206**, below even PTQ. `stop` collapsed from 0.938 to 0.023 and
+> `height` from 1.000 to 0.000.
 
-At `|dw| = 1e-5` — the learning-rate floor itself — on the QAT checkpoint:
+*Inference.* Restoring the step size without adding any behavior-preservation
+term let the policy drift **further** from the reference. The learning-rate
+floor had been acting as an accidental brake. Removing the brake, on an
+objective with nothing anchoring it to the reference policy, made things worse
+— which is what the objective audit predicted: PPO surrogate + value − entropy
+contains no term that refers to the reference at all.
 
-| arm | KL at the floor | vs threshold 0.01 |
-|---|---|---|
-| float | 3.66e-07 | 27,000× below |
-| W16A16 | 1.42e-04 | 70× below |
-| W8A16 | 8.61e-04 | 12× below |
-| **W8A8** | **6.28e-02** | **6.3× above** |
+Arm A (float execution of the fixed-LR parameters) scores **0.143**. It is
+still quantizer-dependent, exactly like the baseline.
 
-**W8A8 is the only configuration on the ladder whose noise floor exceeds the
-controller's threshold, and the only one where QAT fails.** The correspondence
-is predictive: it is obtained from one forward pass, with no training run.
+## 5. Hypothesis B — does W8A16 restore adaptive-LR training?  **YES — confirmed**
+
+`qat_v2_w8a16` completed 2000/2000 under the **normal** adaptive controller.
+Learning rate at floor **2.8%** of iterations (baseline 100.0%), median KL
+**0.0055** against the 0.01 threshold — the controller behaved.
+
+| arm | forward | reverse | turn_L | turn_R | stop | height | combined | **mean** |
+|---|---|---|---|---|---|---|---|---|
+| **QAT W8A16, fake-quant (B)** | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | **1.000** |
+| **QAT W8A16, float (A)** | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | 1.000 | **1.000** |
+
+`yaw_rmse_rad_s` 0.0194 / 0.0261 — **better than the FP32 control's**
+0.0224 / 0.0295.
+
+> **Arm A equals arm B equals 1.000.** W8A16 QAT does *not* become
+> quantizer-dependent. It learned a policy that is genuinely robust to
+> quantization rather than one that requires it. This is the sharpest possible
+> contrast with W8A8, where arm A collapses to 0.143–0.000 while arm B still
+> passes several segments.
+
+The sensitivity half of Hypothesis B was already supported by the perturbation
+study (§3, Observation 4). The trainability half is now confirmed directly.
+
+## 5b. What this does to the proposed mechanism
+
+**The mechanism is real but it is not the cause.** Both halves have to be
+stated:
+
+| Claim | Status |
+|---|---|
+| W8A8 fake-quant amplifies policy KL by ~1.6e5× at the LR floor | **measured**, §2 |
+| That pins PPO's learning rate at its floor for 2000/2000 iterations | **measured**, §1 |
+| **That collapse is why W8A8 loses turning** | **FALSIFIED** — §4 |
+| Activation precision is the binding constraint | **supported** — §5 |
+| Current QAT has no behavior-preservation term | **established** (objective audit) |
+
+The learning-rate collapse is a genuine, reproducible, previously undocumented
+pathology of QAT under KL-adaptive on-policy RL, and the noise-floor criterion
+still predicts which precisions trigger it. But it is a **co-symptom** of
+8-bit activations, not the mechanism by which control is lost. Removing it in
+isolation makes the policy worse.
+
+*Why the earlier reasoning was wrong.* The LR collapse and the control failure
+were perfectly correlated across the precision ladder, and correlation across
+a ladder that varies one thing is easy to mistake for causation. Only the
+intervention separated them.
 
 ## 6. Remaining uncertainties
 
-1. **Both confirmation arms are incomplete.** Everything in §4 and half of §5
-   is open. No causal claim about *trainability* is being made yet.
+1. ~~Both confirmation arms are incomplete.~~ **Closed.** Both completed
+   2000/2000; §4 and §5 are answered.
 2. **One seed.** Every arm here is seed 1. The mechanism measurement is
    deterministic given a checkpoint, but the training outcomes are not.
 3. **One model, one task.** The exponent 0.54 and the ~70× activation
@@ -356,29 +406,47 @@ is predictive: it is obtained from one forward pass, with no training run.
 
 ## 7. Is the v0 report ready to freeze?
 
-**Not yet — but the mechanism half is.**
+**Yes — but not under the proposed title.**
 
-Ready to freeze now:
+*"Why W8A8 QAT Stalls in PPO: KL Amplification and Learning-Rate Collapse"*
+asserts that the collapse is the reason W8A8 fails. §4 falsifies that. Writing
+it under that title would be forcing the story, which goal-5 explicitly
+forbids.
 
-* the perturbation-response measurement and its scaling exponents,
-* the dead-zone / piecewise-constant demonstration, with the crossing counts
-  that prove the identical values are arithmetic,
-* the activation-vs-weight isolation (Observation 4),
-* the LR-floor training traces, 2000/2000 against 10/2000,
-* the noise-floor-predicts-trainability correspondence across five precisions,
-* the three falsified alternatives (rounding bias, latent bottleneck,
-  reward rebalancing).
+The evidence supports a different and, in the end, more useful paper:
 
-Blocking a freeze:
+> **"Learning-Rate Collapse in Quantization-Aware RL: A Real Pathology That Is
+> Not the Cause"**
 
-* **Hypothesis A is untested.** A report titled *"Why W8A8 QAT Stalls in PPO:
-  KL Amplification and Learning-Rate Collapse"* asserts that the LR collapse is
-  the *cause*. Everything above establishes the collapse is real, is caused by
-  quantization, and is driven by the activation path — but a causal claim needs
-  the intervention. If `qat_v2_fixlr` does not recover turning, the honest title
-  becomes *"…KL Amplification and Learning-Rate Collapse — necessary but not
-  sufficient"*, which is a different paper.
+with three results, each with its controlled comparison:
 
-**Decision: hold the freeze until both arms finish (~2.5 h from launch), then
-write §4 and §5 from the completed runs.** The title is provisionally correct
-and provisionally unearned.
+1. **The pathology.** Fake-quant makes the policy discontinuous in its weights.
+   One 1e-5 step — the algorithm's own floor — produces KL 6.73e-02 against
+   4.06e-07 in float. PPO's controller reads that as divergence and pins the
+   rate at its floor for 2000/2000 iterations, against 10/2000 for the FP32
+   control. The reward curve stays healthy throughout (28.64 vs 29.30), so
+   only the learning-rate trace reveals it.
+2. **A predictive criterion.** The noise floor at the LR floor separates the
+   precision ladder exactly: W16A16 and W8A16 sit 70× and 12× below the
+   controller's threshold, W8A8 sits 6.3× above it. One forward pass, no
+   training run.
+3. **The falsification.** Removing the collapse does not fix the policy — it
+   makes it worse (0.501 → 0.206, below PTQ). Activation width is the binding
+   constraint: W8A16 under the *normal* controller reaches 1.000 on all seven
+   segments in **both** float and fake-quant execution, with yaw RMSE better
+   than the FP32 control's.
+
+Result 3 is what makes the paper worth writing. A paper reporting only 1 and 2
+would have been wrong in exactly the way this project keeps finding: a
+mechanism that explains a phenomenon is not the mechanism that produces it.
+
+**Deployment recommendation is unchanged and now better supported.** W16A16
+remains the verified deployment configuration. W8A16 is now demonstrated to be
+trainable *and* quantizer-independent, so the only barrier to shipping it
+remains the exporter's INT16-by-construction weight path.
+
+**Next experiments.** §4 points directly at behavior preservation rather than
+step size: the frozen-anchor residual and the FP32-teacher KL designs in
+`goal4_experiment_designs.md`. Their stated precondition — that they must run
+with a fixed learning rate — is now known to be **necessary but not
+sufficient**, which is itself a result those designs should absorb.

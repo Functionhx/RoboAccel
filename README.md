@@ -139,45 +139,55 @@ comparison below is three-seed.*
 
 ### Why quantization-aware training fails at W8A8
 
-QAT is supposed to fix this. It does not — and the reason is not that 8-bit
-activations cannot represent the policy.
+QAT is supposed to fix this. It does not. Chasing the reason turned up a real
+optimizer pathology — and then an intervention showed it is not the cause.
 
 <img src="assets/perturbation_response.svg" alt="Policy KL against weight perturbation magnitude for float, W16A16, W8A16 and W8A8" width="100%">
 
-Fake-quantization makes the policy a **discontinuous** function of its weights:
-a step below one quantization LSB changes nothing, a step across an LSB boundary
-snaps that weight by a whole LSB. PPO's adaptive controller regulates its
-learning rate by measured policy KL, and reads that discontinuity as divergence.
-
-The controller assumes KL grows with step size. Over a 2563× span of
-perturbation magnitude, float KL rises **6.19e6×** — exactly quadratic, as a
-smooth function must. W8A8 rises **68×**. The lever barely moves the quantity
-it is supposed to regulate.
-
-That flatness is common to *every* quantized configuration, including the two
-that train fine — so it is necessary but not sufficient. What singles out W8A8
-is that its noise floor sits **above** the controller's fixed threshold while
-the others sit well below it. Both facts are needed.
-
-**W8A16 and W8A8 have the same 8-bit weights and cross the same number of
-quantization boundaries under the same perturbation — measured, not assumed —
-yet their KL differs by ~70×.** The amplifier is the activation path.
-
-|                                          |  W8A8 QAT | FP32 control |
-| ---------------------------------------- | --------: | -----------: |
-| Learning rate pinned at its 1e-5 floor   | **2000 / 2000 iterations** |  10 / 2000 |
-| Median policy KL                         |    0.0650 |       0.0054 |
-| Reward at convergence                    |     28.64 |        29.30 |
-
+**The pathology.** Fake-quantization makes the policy a **discontinuous**
+function of its weights: a step below one quantization LSB changes nothing, a
+step across an LSB boundary snaps that weight by a whole LSB. PPO regulates its
+learning rate by measured policy KL and reads that discontinuity as divergence.
 One 1e-5 weight step — the algorithm's own floor — produces a policy KL of
-**6.73e-02** under W8A8 against **4.06e-07** in float. That is 6.7× the
-controller's threshold *at zero effective learning rate*, so the rate fell to
-the floor and never rose. **The run never took a meaningful gradient step, and
-its reward curve looked healthy the entire time.**
+**6.73e-02** under W8A8 against **4.06e-07** in float, which is 6.3× the
+controller's threshold *at zero effective learning rate*.
 
-W8A8 is the only precision on the ladder whose KL floor exceeds the threshold,
-and the only one where QAT fails — so the floor predicts trainability from a
-single forward pass, with no training run at all.
+|                                        | W8A8 QAT | FP32 control |
+| -------------------------------------- | -------: | -----------: |
+| Learning rate pinned at its 1e-5 floor | **2000 / 2000 iterations** | 10 / 2000 |
+| Median policy KL                       |   0.0650 |       0.0054 |
+| Reward at convergence                  |    28.64 |        29.30 |
+
+The reward curve stays healthy the whole time. Only the learning-rate trace
+shows it. And the noise floor predicts the whole precision ladder from a single
+forward pass: W16A16 and W8A16 sit 70× and 12× *below* the threshold, W8A8 sits
+6.3× above it.
+
+**The falsification.** Re-running W8A8 with the learning rate held fixed at the
+FP32 control's median — 0% of iterations at the floor, verified in the
+optimizer — **did not restore turning, and made everything else worse**:
+
+| arm | turn_L | turn_R | stop | height | **mean success** |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| PTQ W8A8 | 0.758 | 0.523 | 0.984 | 0.539 | 0.401 |
+| QAT W8A8 | 0.000 | 0.000 | 0.938 | 1.000 | 0.501 |
+| **QAT W8A8, fixed LR** | 0.000 | 0.000 | 0.023 | 0.000 | **0.206** |
+| **QAT W8A16** | **1.000** | **1.000** | **1.000** | **1.000** | **1.000** |
+
+Restoring the step size without any behavior-preservation term let the policy
+drift *further* from the reference — the learning-rate floor had been an
+accidental brake. **Activation width is the binding constraint.** W8A16, under
+the normal adaptive controller, reaches 1.000 on all seven segments in **both**
+fake-quant and float execution, with yaw RMSE better than the FP32 control's.
+
+That last point is the sharpest contrast in the study: W8A8 QAT scores 0.143 in
+float execution — it *requires* the quantizer it was trained with — while
+W8A16 QAT scores 1.000 in float and 1.000 in fake-quant. One learned to depend
+on the quantizer; the other learned to tolerate it.
+
+**A mechanism that explains a phenomenon is not the mechanism that produces
+it.** The learning-rate collapse is real, reproducible and predictable, and it
+is a co-symptom rather than the cause. Only the intervention separated them.
 
 Full record: [`docs/qat_failure/`](docs/qat_failure/) ·
 [`docs/QAT_RESULTS.md`](docs/QAT_RESULTS.md) ·
