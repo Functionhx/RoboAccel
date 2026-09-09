@@ -66,81 +66,98 @@ targets replay an exported model whose cache images are derived from a
 checkpoint and are correctly not committed. The Quick Start now names the five
 that do pass, and points at step 3 for the rest.
 
-## 4. Open defect — RTL disagrees with software on a second checkpoint
+## 4. Defect found, diagnosed, and fixed — in the testbench, not the RTL
 
-**Status: open. Reproducible. Not fixed, and deliberately not worked around.**
+**Status: resolved.** This section previously concluded the opposite. That
+conclusion was wrong, and how it was wrong is worth keeping.
 
 ### What was observed
 
-Exporting a **second** checkpoint (`SOLID_FP32_V2`, sha256 `ab20c190…`) with
-the same topology produces a descriptor program that is **structurally
-identical** to the deployed one — same 13 opcodes, same source, destination,
-aux and weight bases, same `dim_k`/`dim_n`, same cache layout (620 weight words
-per bank, 132 vector words). The only differences are three `shift` fields,
-which are simply the per-layer weight fractional bits:
+Exporting a second checkpoint (`SOLID_FP32_V2`) produced a descriptor program
+structurally identical to the deployed one — same 13 opcodes, bases, dims and
+cache layout — differing only in three `shift` fields, which are the per-layer
+weight fractional bits:
 
 ```
-deployed        shifts [11, 12, 14, 13, 14, 14, 14]   -> tb_policy_e2e PASS
-SOLID_FP32_V2   shifts [13, 14, 14, 14, 14, 14, 14]   -> tb_policy_e2e FAIL
+deployed        shifts [11, 12, 14, 13, 14, 14, 14]   -> PASS
+SOLID_FP32_V2   shifts [13, 14, 14, 14, 14, 14, 14]   -> FAIL, all 6 actions
 ```
 
-All six actions differ, e.g. `FAIL action 0 got 1733 expected -623`. The
-sequence still completes in exactly 1,799 cycles, and no `$readmemh` file is
-missing.
+All three software implementations agreed bit-identically over 500 samples, so
+the divergence was attributed to the RTL.
 
-### Where the disagreement is
+### The wrong step
 
-**In the RTL, not in the exporter or the reference.** On the same checkpoint,
-all three software implementations are bit-identical over 500 samples:
+"A testbench regression" was listed as ruled out, on the evidence that the
+original model passes. **That test was insufficient.** The original model
+passes for a reason that does not generalise, and only a test that varies the
+program could have shown it.
+
+### How it was actually found
+
+Dumping the vector cache after the sequence gives every layer's output, since
+each descriptor writes to its own address. Comparing them against the software
+reference put the first divergence at **descriptor 0**, the very first GEMM.
+Sweeping the assumed shift over the software model then reproduced the RTL
+output exactly:
 
 ```
-A torch  vs B numpy       100.0000 %   0.0000 max LSB
-B numpy  vs C exporter    100.0000 %   0.0000 max LSB
-A torch  vs C exporter    100.0000 %   0.0000 max LSB
-CROSS_VALIDATION: PASS (all bit-identical)
+assumed shift   exact matches / 128
+           11                  128   <-- MATCH
+           13                    0   <-- what the descriptor requested
 ```
 
-### What has been ruled out
+The RTL applied shift **11**, bit-exactly on all 128 lanes, when the descriptor
+asked for **13**. Eleven is the *deployed* model's shift for that layer.
 
-| Candidate | Test | Result |
+### Root cause
+
+`fpga/tb/tb_policy_e2e.sv` **hardcoded all 13 descriptors**, including one
+policy's shifts, and never read the exported `instruction_program.hex`. It
+loaded the exported *weights and inputs* and ran them against a *fixed*
+program. Any model whose weight fractional bits differ from the deployed one's
+therefore failed, and the deployed one passed because its shifts happened to
+match the hardcoded constants.
+
+### Fix and verification
+
+The testbench now reads the exported program and writes it through the same
+host interface the PS uses:
+
+```systemverilog
+$readmemh("../generated/instruction_program.hex", program_words);
+for (group = 0; group < 13; group = group + 1)
+    instruction_write(group[4:0], program_words[group]);
+```
+
+| Model | Before | After |
 |---|---|---|
-| A stale or broken vendored exporter | Export the **original** model with the **published** exporter and run the same TB | **PASS**, 1,799 cycles, identical selftest vector — the toolchain is sound |
-| A testbench regression (a `cmd_subop` dangling-port warning is present) | Same test | **PASS** — the TB is not the problem |
-| Large shift values | Re-export with `MAX_WEIGHT_FRAC` capped to 13, then 12 | **Still fails** at both — not the shift magnitude |
-| Missing or truncated cache images | Checked all 24 bank files plus `vector_cache.hex` load | All present, no `$readmemh` error |
-| Capacity overrun | 620/1280 weight words, 132/512 vector words, 13/32 instructions | Identical to the passing model |
-| Activation saturation | Compared per-layer ranges | The **original** model saturates Q8.8 exactly (`encoder.2` reaches ±128.000) and passes; `SOLID_FP32_V2` peaks at 30.96 and fails — the opposite of the saturation hypothesis |
+| `fudan_policy` (deployed) | PASS, 1,799 cycles | **PASS, 1,799 cycles** |
+| `SOLID_FP32_V2` | FAIL, 6/6 actions | **PASS, 1,799 cycles** |
 
-### Minimal reproducer
+**No RTL was changed.** The accelerator applied exactly the shift it was given.
 
-```bash
-python quantization/scripts/export_to_onnx.py <SOLID_FP32_V2.pt> --out policy.onnx
-python fpga/tools/export_policy.py --model policy.onnx --out fpga/generated \
-       --samples 1000 --seed 7
-make -C fpga/tb policy        # FAIL, 6 action mismatches
-```
+### What this means for the claims
 
-### Consequence for the project's claims
+The programmability claim is **strengthened, not weakened**: a second policy,
+with different weights and different per-layer scales, now runs correctly
+through the same RTL from nothing but a re-export. That is the architecture
+working as designed, and it is now actually tested.
 
-The README previously stated that deploying a different policy means
-re-exporting cache images and a descriptor program rather than rewriting RTL.
-**That is the design intent and it is what the architecture is built for, but
-this audit shows it is not yet demonstrated for a second set of weights.** The
-claim has been softened accordingly, and this defect is now the top item in
-`docs/ARCHITECTURE.md` §7.
-
-No RTL was changed. The evidence localizes the disagreement but does not yet
-identify the mechanism, and changing hardware on an unidentified mechanism
-would be guessing.
+It also removes a blind spot. The testbench could only ever validate one model,
+so "the RTL executes the exported program" had never been checked — the
+regression would have passed forever while silently ignoring the program under
+test.
 
 ## 5. Verdict
 
-**Not ready to tag a release.**
+**Ready to tag, with the scope stated.**
 
-The deployed policy is fully verified end to end, reproducibly, from a clean
-clone — that part is solid and is what the README claims. But the central
-architectural promise, that the accelerator is programmed rather than
-hardwired, is contradicted by §4 for the one case that tests it.
+The deployed policy is verified end to end, reproducibly, from a clean clone.
+A second policy with different weights and different per-layer scales also
+passes the full RTL regression after the testbench was corrected, which is the
+first real evidence for the central architectural claim.
 
-Tagging `v0.1.0` should wait until either the §4 mechanism is identified, or
-the claim is restated to describe exactly the configuration that is verified.
+Still outside what this audit can cover, and labelled as such wherever quoted:
+the two physical benchmarks and the Vivado utilization figures need hardware,
+and training needs an environment that cannot be redistributed.

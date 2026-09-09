@@ -80,11 +80,12 @@ executes the whole network from a single register write. Deploying a different
 policy is meant to be a re-export of cache images and a descriptor program
 rather than an RTL change.
 
-> **Verified for the deployed policy; not yet demonstrated for a second one.**
-> A release audit exported a different checkpoint with identical topology — the
-> descriptor program came out structurally identical, and all three software
-> implementations agreed bit-exactly — but the RTL simulation disagreed. The
-> defect is open and localized to the RTL. See
+> **Now tested with two policies.** A release audit exported a second
+> checkpoint with different weights and different per-layer scales; it runs
+> correctly through the same RTL from nothing but a re-export. Getting there
+> required fixing the end-to-end testbench, which had hardcoded one policy's
+> descriptor program instead of reading the exported one — so it had never
+> actually tested programmability. See
 > [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) §4.
 
 ---

@@ -132,11 +132,11 @@ implementations bit-identical), `tb_policy_e2e` PASS at 1,799 cycles,
 `H7_HOST_CHECK: PASS` (0/24 mismatches, ELU ROM 0/256 differing), and the STM32
 codegen reports 38,400 MAC.
 
-## Open defect affecting a claim
+## Claim upgraded by the release audit
 
 | Claim | Status |
 |---|---|
-| "Deploying a different policy is a re-export, not an RTL change" | **Design intent, not demonstrated.** A second checkpoint with identical topology produces a structurally identical descriptor program and is bit-identical across all three software implementations, yet the RTL simulation disagrees on all six actions. Open, localized to the RTL, not worked around. `RELEASE_CANDIDATE.md` §4 |
+| "Deploying a different policy is a re-export, not an RTL change" | **Measured, two policies.** A second checkpoint with different weights and different per-layer weight fractional bits passes the full RTL regression at 1,799 cycles after a testbench fix. The testbench had hardcoded one policy's descriptor program and never read the exported one, so programmability had never been tested. No RTL changed. `RELEASE_CANDIDATE.md` §4 |
 
 ## Provenance boundaries
 

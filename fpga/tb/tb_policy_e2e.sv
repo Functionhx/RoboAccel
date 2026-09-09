@@ -41,6 +41,7 @@ module tb_policy_e2e;
     reg [127:0] selftest_obs [0:3];
     reg [127:0] selftest_history [0:15];
     reg [127:0] selftest_actions [0:0];
+    reg [127:0] program_words [0:31];
     integer cycle_counter = 0;
     integer start_cycle;
     integer group;
@@ -160,6 +161,7 @@ module tb_policy_e2e;
         $readmemh("../generated/selftest_input0.hex", selftest_obs);
         $readmemh("../generated/selftest_input1.hex", selftest_history);
         $readmemh("../generated/selftest_actions.hex", selftest_actions);
+        $readmemh("../generated/instruction_program.hex", program_words);
 
         repeat (4) @(posedge clk);
         reset_n <= 1;
@@ -169,19 +171,11 @@ module tb_policy_e2e;
         for (group = 0; group < 16; group = group + 1)
             vec_write(9'd4 + group[8:0], selftest_history[group]);
 
-        instruction_write(0, descriptor(`RL_OP_GEMM, 4, 20, 36, 0, 0, 125, 128, 11));
-        instruction_write(1, descriptor(`RL_OP_ELU, 20, 20, 0, 0, 0, 0, 128, 0));
-        instruction_write(2, descriptor(`RL_OP_GEMM, 20, 52, 60, 0, 256, 128, 64, 12));
-        instruction_write(3, descriptor(`RL_OP_ELU, 52, 52, 0, 0, 0, 0, 64, 0));
-        instruction_write(4, descriptor(`RL_OP_GEMM, 52, 68, 69, 0, 384, 64, 3, 14));
-        instruction_write(5, descriptor(`RL_OP_CONCAT, 0, 70, 68, 0, 0, 25, 3, 0));
-        instruction_write(6, descriptor(`RL_OP_GEMM, 70, 74, 90, 0, 392, 28, 128, 13));
-        instruction_write(7, descriptor(`RL_OP_ELU, 74, 74, 0, 0, 0, 0, 128, 0));
-        instruction_write(8, descriptor(`RL_OP_GEMM, 74, 106, 114, 0, 456, 128, 64, 14));
-        instruction_write(9, descriptor(`RL_OP_ELU, 106, 106, 0, 0, 0, 0, 64, 0));
-        instruction_write(10, descriptor(`RL_OP_GEMM, 106, 122, 126, 0, 584, 64, 32, 14));
-        instruction_write(11, descriptor(`RL_OP_ELU, 122, 122, 0, 0, 0, 0, 32, 0));
-        instruction_write(12, descriptor(`RL_OP_GEMM, 122, 130, 131, 0, 616, 32, 6, 14));
+        // The program is part of the model, not of the testbench:
+        // read the exported descriptors instead of hardcoding one
+        // policy's shifts.
+        for (group = 0; group < 13; group = group + 1)
+            instruction_write(group[4:0], program_words[group]);
 
         @(negedge clk);
         start_cycle = cycle_counter;
