@@ -23,13 +23,13 @@ from pathlib import Path
 import numpy as np
 import torch
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
-from hwq.fixed_ref import QMAX  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.fixed_ref import QMAX  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
-sys.path.insert(0, str(QAT_ROOT / "scripts"))
+sys.path.insert(0, str(QUANT_ROOT / "scripts"))
 from quant_diagnostics import OFF, load_net  # noqa: E402
 
 # GEMM output -> the module whose output sits on that layer's grid.

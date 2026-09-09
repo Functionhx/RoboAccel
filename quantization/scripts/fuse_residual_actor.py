@@ -27,8 +27,8 @@ import json
 from pathlib import Path
 import sys
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
 import torch
 
@@ -101,7 +101,7 @@ def main() -> int:
     print("  CONSTRAINT: PL CONCAT cannot requantize, so frac(base_penultimate) "
           "must equal frac(residual_penultimate)")
     if a.base_frac is not None and a.residual_frac is not None:
-        from hwq.fixed_ref import FudanFixedPolicy
+        from roboaccel_quant.fixed_ref import FudanFixedPolicy
         FudanFixedPolicy.check_residual_concat(a.base_frac, a.residual_frac)
         print(f"  grid check: base frac {a.base_frac} == residual frac "
               f"{a.residual_frac} -- fusion is representable")

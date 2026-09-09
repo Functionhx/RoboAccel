@@ -20,10 +20,10 @@ import numpy as np
 import torch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from hwq.fixed_ref import ACT_FRAC
-from hwq.quant_policy import (QuantActorCriticSequence, build_from_onnx,
+from roboaccel_quant.fixed_ref import ACT_FRAC
+from roboaccel_quant.quant_policy import (QuantActorCriticSequence, build_from_onnx,
                               build_from_checkpoint)
-from hwq.torch_hw import QuantConfig
+from roboaccel_quant.torch_hw import QuantConfig
 
 LSB = 1.0 / (1 << ACT_FRAC)
 

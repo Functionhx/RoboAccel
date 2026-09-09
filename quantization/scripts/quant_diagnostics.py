@@ -25,13 +25,13 @@ from pathlib import Path
 import numpy as np
 import torch
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
-from hwq.fixed_ref import ACT_FRAC, QMAX, choose_weight_frac  # noqa: E402
-from hwq.quant_policy import (QuantActorCriticSequence, build_from_onnx,
+from roboaccel_quant.fixed_ref import ACT_FRAC, QMAX, choose_weight_frac  # noqa: E402
+from roboaccel_quant.quant_policy import (QuantActorCriticSequence, build_from_onnx,
                               build_from_checkpoint)  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 LSB = 1.0 / (1 << ACT_FRAC)
 TAPS = ["encoder.0", "encoder.1", "encoder.2", "encoder.3", "encoder.4",

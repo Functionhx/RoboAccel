@@ -7,7 +7,9 @@ set -euo pipefail
 MODEL_DIR=$1
 WORK=$(mktemp -d)
 trap 'rm -rf "$WORK"' EXIT
-SRC=/home/as/vllm/fpga/projects/h7_bench/src
+HERE0=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+REPO=$(cd "$HERE0/../../.." && pwd)
+SRC=${ROBOACCEL_H7_SRC:-$REPO/stm32/src}
 HERE=$(cd "$(dirname "$0")" && pwd)
 
 echo "int16_t ra_elu_probe(int16_t x);" > "$WORK/ra_probe.h"

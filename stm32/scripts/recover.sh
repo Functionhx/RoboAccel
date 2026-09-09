@@ -5,7 +5,11 @@
 # reachable; we mass-erase to evict the offending image.
 set -uo pipefail
 here=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-source /home/as/vllm/fpga/env/stm32.sh
+# The ARM toolchain is external to this repository. Set ROBOACCEL_STM32_ENV to
+# a script that puts arm-none-eabi-* and STM32CubeProgrammer on PATH.
+if [ -n "${ROBOACCEL_STM32_ENV:-}" ]; then source "$ROBOACCEL_STM32_ENV"; fi
+command -v arm-none-eabi-gcc >/dev/null || {
+    echo "arm-none-eabi-gcc not on PATH; set ROBOACCEL_STM32_ENV" >&2; exit 1; }
 model="${1:-go2}"
 strip() { sed 's/\x1b\[[0-9;]*m//g'; }
 

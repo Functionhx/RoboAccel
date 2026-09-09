@@ -21,11 +21,11 @@ from pathlib import Path
 import torch
 import torch.nn as nn
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
-from hwq.quant_policy import QuantActorCriticSequence  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.quant_policy import QuantActorCriticSequence  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 OFF = dict(quant_weights=False, quant_obs=False, quant_hidden=False, quant_output=False)
 

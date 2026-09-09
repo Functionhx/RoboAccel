@@ -22,12 +22,12 @@ from pathlib import Path
 
 import numpy as np
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
-from hwq.fixed_ref import ACT_FRAC, SatStats  # noqa: E402
-from hwq.quant_policy import build_from_onnx  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.fixed_ref import ACT_FRAC, SatStats  # noqa: E402
+from roboaccel_quant.quant_policy import build_from_onnx  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 # Observation layout, verified in QAT_DESIGN.md section 1.
 ANG_VEL, GRAV, CMD, DOF_POS, DOF_VEL, PREV_ACT = (
@@ -91,7 +91,7 @@ def main() -> int:
     ap.add_argument("--onnx", type=Path, required=True)
     ap.add_argument("--obs", type=Path, nargs="+", required=True)
     ap.add_argument("--per-regime", type=int, default=24)
-    ap.add_argument("--out", type=Path, default=QAT_ROOT / "golden_vectors")
+    ap.add_argument("--out", type=Path, default=QUANT_ROOT / "golden_vectors")
     args = ap.parse_args()
 
     obs = np.concatenate([np.load(p)["obs"] for p in args.obs]).astype(np.float64)

@@ -2,7 +2,7 @@
 # goal.md sections 8/9 on the frozen codex baseline, scored by the locomotion
 # evaluator. Separate from the multi-seed driver so the two can share the GPU.
 set -uo pipefail
-source /home/as/vllm/fpga/projects/rl_accel/qat/scripts/env_solid.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env_solid.sh"
 CK=$QAT_ROOT/artifacts/v2/frozen/SOLID_FP32_V2.pt
 F8=$QAT_ROOT/artifacts/v2/act_fracs_a8.json
 OUT=$QAT_ROOT/artifacts/v2

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 190" width="880" height="190" role="img">
+<style>
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#101820}
+  .band-title{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}
+  .band-mark{font-size:12px;fill:#8A95A1;letter-spacing:1.4px}
+  .stage{font-size:11px;fill:#5C6874;letter-spacing:1.8px;font-weight:600}
+  .h{font-size:15px;font-weight:600}
+  .p{font-size:13px;fill:#5C6874}
+  .n{font-size:13px;font-weight:600}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2A6DB0}
+  .cap{font-size:12px;fill:#5C6874}
+  .ax{font-size:12px;fill:#5C6874}
+</style>
+<rect width="880" height="190" fill="#101820"/>
+<line x1="108" y1="150" x2="172" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<line x1="208" y1="150" x2="272" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<line x1="308" y1="150" x2="372" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<line x1="408" y1="150" x2="472" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<line x1="508" y1="150" x2="572" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<line x1="608" y1="150" x2="672" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<line x1="708" y1="150" x2="772" y2="150" stroke="#2C3A47" stroke-width="1"/>
+<rect x="74" y="141" width="32" height="18" rx="2" fill="#2A6DB0" stroke="#2A6DB0"/>
+<rect x="174" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
+<rect x="274" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
+<rect x="374" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
+<rect x="474" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
+<rect x="574" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
+<rect x="674" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
+<rect x="774" y="141" width="32" height="18" rx="2" fill="#2A6DB0" stroke="#2A6DB0"/>
+<text x="440.0" y="76" text-anchor="middle" font-size="52" font-weight="700" fill="#F5F8FA" letter-spacing="-1">RoboAccel</text>
+<text x="440.0" y="104" text-anchor="middle" font-size="16" fill="#2A6DB0" letter-spacing="4.5">FROM RL POLICY TO REAL-TIME SILICON</text>
+<text x="440.0" y="128" text-anchor="middle" font-size="13" fill="#7C8996">End-to-end reinforcement-learning controller deployment for FPGA and Cortex-M7</text>
+</svg>

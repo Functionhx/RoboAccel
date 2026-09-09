@@ -24,15 +24,15 @@ import json
 import sys
 from pathlib import Path
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
 import numpy as np
 import torch
 
-import hwq.fixed_ref as fr
-from hwq.quant_policy import build_from_checkpoint
-from hwq.torch_hw import QuantConfig
+import roboaccel_quant.fixed_ref as fr
+from roboaccel_quant.quant_policy import build_from_checkpoint
+from roboaccel_quant.torch_hw import QuantConfig
 
 
 def ideal_round_shift(v, shift):

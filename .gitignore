@@ -9,3 +9,6 @@ artifacts/
 checkpoints/
 logs/
 *.log
+
+# Icarus Verilog build products
+*.vvp

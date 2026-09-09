@@ -54,14 +54,22 @@ different boundaries would be an argument, not a measurement.
 
 | # | Claim | Class | Source |
 |---|---|---|---|
-| C1 | FP32 / W16A16 / W8A16 all score **1.000** across seven segments | **reproduced** | `docs/results/ladder_pooled.json`, three training seeds |
-| C2 | W8A8 scores **0.000–0.164** | **reproduced** | same file, three seeds |
-| C3 | W4A8 scores **0.000** | **reproduced** | same file |
+| C1 | FP32 / W16A16 / W8A16 all score **1.000** across seven segments | **measured** | `docs/results/ladder_pooled.json` — `seeds: 1`. Single training seed |
+| C2 | W8A8 scores **0.041 mean, 0.000–0.164 across segments** | **measured** | same file, single seed |
+| C3 | W4A8 scores **0.000**; wheel support **0.394 [0.239, 0.480]** | **measured** | same file, single seed |
 | C4 | "The quantization cliff is exactly at 8-bit activations" | **measured** | follows directly from C1 vs C2: W8A16 (8-bit weights, 16-bit activations) is undamaged; W8A8 collapses |
 | C5 | Model bytes 78,412 / 40,012 / 39,631 / 20,431 | **measured** | exporter output sizes |
 
-**Seed discipline.** C1–C3 are three-seed. Where a number is single-seed it is
-said so at the point of use. `peak_roll_rad` is deliberately **not** quoted
+**Seed discipline — corrected.** C1–C3 are **single-seed**: `ladder_pooled.json`
+reports `seeds: 1`. An earlier revision of this table and of the README called
+the precision ladder three-seed; that was a conflation with a *different*
+experiment — the QAT-versus-PTQ comparison in `QAT_RESULTS.md` §31/§32, which
+genuinely is three-seed (R1–R3 below). The ladder's W8A8 collapse is
+corroborated by that three-seed result (turning 0.000 in every seed), but the
+ladder itself is one seed and is now labelled as such wherever it appears.
+A second correction: W4A8 wheel support was previously quoted as **0.239**,
+which is the minimum across segments, not the value; the mean is **0.394**.
+Where a number is single-seed it is said so at the point of use. `peak_roll_rad` is deliberately **not** quoted
 anywhere: it is a max over 768 episodes and swings 75 points across seeds — an
 earlier claim built on it was retracted. `mean_episode_peak_roll_rad` is the
 seed-stable statistic and is the one used.

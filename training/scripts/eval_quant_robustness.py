@@ -25,14 +25,16 @@ import os
 import sys
 from pathlib import Path
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+REPO = Path(__file__).resolve().parents[2]
+# roboaccel_quant lives under quantization/, one component over.
+sys.path.insert(0, str(REPO / "quantization"))
+QAT_ROOT = REPO / "training"
 
 import isaacgym  # noqa: F401  must precede torch
 import torch
 
-from hwq.torch_hw import QuantConfig
-from hwq.quant_policy import QuantActorCriticSequence
+from roboaccel_quant.torch_hw import QuantConfig
+from roboaccel_quant.quant_policy import QuantActorCriticSequence
 
 
 def make_factory(cfg: QuantConfig, use_integer: bool):

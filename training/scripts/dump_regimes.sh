@@ -2,7 +2,7 @@
 # One Isaac Gym simulator per process (a second sim in the same process
 # segfaults), then merge the partial dumps into one observation pool.
 set -euo pipefail
-source /home/as/vllm/fpga/projects/rl_accel/qat/scripts/env_solid.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env_solid.sh"
 OUT=${OUT:-$QAT_ROOT/artifacts/deploy/regimes}
 mkdir -p "$OUT"
 cd "$SOLID_WT"

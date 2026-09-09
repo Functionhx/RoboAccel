@@ -3,7 +3,7 @@
 
 The forward pass is not an approximation of the RoboAccel/H7 datapath -- it is
 that datapath, evaluated on tensors. Every integer stage from
-`hwq.fixed_ref` is reproduced here, including the requantizer's asymmetric
+`roboaccel_quant.fixed_ref` is reproduced here, including the requantizer's asymmetric
 negative rounding, so a QAT policy trains against the errors the board will
 actually make rather than against a tidier model of them.
 

@@ -16,8 +16,10 @@ import argparse
 import sys
 from pathlib import Path
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+REPO = Path(__file__).resolve().parents[2]
+# roboaccel_quant lives under quantization/, one component over.
+sys.path.insert(0, str(REPO / "quantization"))
+QAT_ROOT = REPO / "training"
 
 import isaacgym  # noqa: F401  must precede torch
 import numpy as np
@@ -35,8 +37,8 @@ def main() -> int:
     from wheel_legged_gym.scripts import evaluate_robustness as ev
     from wheel_legged_gym.utils import get_args, task_registry
     from wheel_legged_gym.utils.helpers import set_seed
-    from hwq.quant_policy import build_from_checkpoint
-    from hwq.torch_hw import QuantConfig
+    from roboaccel_quant.quant_policy import build_from_checkpoint
+    from roboaccel_quant.torch_hw import QuantConfig
 
     sys.argv = [sys.argv[0]] + rest
     args = get_args([

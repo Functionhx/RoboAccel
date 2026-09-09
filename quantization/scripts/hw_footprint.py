@@ -16,12 +16,12 @@ from pathlib import Path
 
 import numpy as np
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+QUANT_ROOT = Path(__file__).resolve().parent.parent   # quantization/
+sys.path.insert(0, str(QUANT_ROOT))
 
-from hwq.fixed_ref import QMAX  # noqa: E402
-from hwq.quant_policy import build_from_onnx  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.fixed_ref import QMAX  # noqa: E402
+from roboaccel_quant.quant_policy import build_from_onnx  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 PL_HZ, H7_HZ = 100_000_000, 480_000_000
 

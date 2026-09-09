@@ -5,15 +5,16 @@ The three implementations are meant to agree by construction. "Meant to" is
 not evidence, so this reads the actual sources and compares.
 """
 from __future__ import annotations
-import re, sys
+import os, re, sys
 from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from hwq.fixed_ref import elu_table, elu_q88, round_shift, saturate, ACT_FRAC
+from roboaccel_quant.fixed_ref import elu_table, elu_q88, round_shift, saturate, ACT_FRAC
 
-RTL = Path("/home/as/vllm/fpga/projects/rl_accel/rtl")
-H7 = Path("/home/as/vllm/fpga/projects/h7_bench/src")
+REPO = Path(__file__).resolve().parents[2]
+RTL = Path(os.environ.get("ROBOACCEL_RTL", REPO / "fpga" / "rtl"))
+H7 = Path(os.environ.get("ROBOACCEL_H7_SRC", REPO / "stm32" / "src"))
 
 
 def check_elu_rom() -> int:

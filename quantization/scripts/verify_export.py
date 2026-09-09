@@ -6,8 +6,8 @@ against the existing FPGA exporter, and against the H7 model. All four run the
 same weights on the same inputs; anything less than bit-identical is an
 arithmetic mismatch to be located, not a tolerance to be widened.
 
-  A  hwq/torch_hw.py            torch fake-quant (what QAT trained against)
-  B  hwq/fixed_ref.py           numpy int64 reference
+  A  roboaccel_quant/torch_hw.py            torch fake-quant (what QAT trained against)
+  B  roboaccel_quant/fixed_ref.py           numpy int64 reference
   C  tools/export_policy.py     the shipped FPGA exporter's fixed_inference
   D  tools/fixed_policy.py      the shipped H7/FPGA closed-loop model
 """
@@ -24,9 +24,9 @@ RL_ACCEL = QAT_ROOT.parent
 sys.path.insert(0, str(QAT_ROOT))
 sys.path.insert(0, str(RL_ACCEL / "tools"))
 
-from hwq.fixed_ref import ACT_FRAC  # noqa: E402
-from hwq.quant_policy import build_from_onnx  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.fixed_ref import ACT_FRAC  # noqa: E402
+from roboaccel_quant.quant_policy import build_from_onnx  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 LSB = 1.0 / (1 << ACT_FRAC)
 

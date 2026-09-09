@@ -1,100 +1,113 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 330" width="900" height="330" font-family="Helvetica,Arial,sans-serif">
-<rect width="900" height="330" fill="#ffffff"/>
-<style>.hdr{font-size:12px;fill:#888;letter-spacing:1.5px}.ax{font-size:11px;fill:#666}.lbl{font-size:12px;fill:#111}.val{font-size:11px;fill:#111;font-weight:600}.tag{font-size:11px;fill:#666}.mono{font-size:11px;fill:#111;font-family:ui-monospace,Menlo,Consolas,monospace}</style>
-<text x="20" y="30" class="hdr">CONTROL SUCCESS BY PRECISION — SEVEN COMMAND SEGMENTS, MEASURED</text>
-<line x1="20" y1="40" x2="880" y2="40" stroke="#ddd"/>
-<text x="229.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 229.0 60)">forward</text>
-<text x="307.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 307.0 60)">reverse</text>
-<text x="385.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 385.0 60)">turn_left</text>
-<text x="463.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 463.0 60)">turn_right</text>
-<text x="541.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 541.0 60)">stop</text>
-<text x="619.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 619.0 60)">height</text>
-<text x="697.0" y="60" class="ax" text-anchor="middle" transform="rotate(-30 697.0 60)">combined</text>
-<text x="770" y="60" class="ax" text-anchor="middle">mean</text>
-<text x="176" y="92" class="lbl" text-anchor="end">FP32</text>
-<rect x="190" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="227.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="268" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="305.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="346" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="383.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="424" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="461.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="502" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="539.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="580" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="617.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="658" y="70" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="695.0" y="89" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<text x="770" y="89" class="val" text-anchor="middle">1.000</text>
-<text x="176" y="126" class="lbl" text-anchor="end" font-weight="600">W16A16</text>
-<text x="176" y="138" class="tag" text-anchor="end">deployed</text>
-<rect x="190" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="227.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="268" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="305.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="346" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="383.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="424" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="461.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="502" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="539.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="580" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="617.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="658" y="104" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="695.0" y="123" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<text x="770" y="123" class="val" text-anchor="middle">1.000</text>
-<text x="176" y="160" class="lbl" text-anchor="end">W8A16</text>
-<rect x="190" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="227.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="268" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="305.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="346" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="383.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="424" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="461.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="502" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="539.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="580" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="617.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<rect x="658" y="138" width="74" height="28" fill="rgb(80,86,165)" stroke="#ccc"/>
-<text x="695.0" y="157" class="val" fill="#fff" text-anchor="middle">1.000</text>
-<text x="770" y="157" class="val" text-anchor="middle">1.000</text>
-<text x="176" y="194" class="lbl" text-anchor="end">W8A8</text>
-<rect x="190" y="172" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="227.0" y="191" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="268" y="172" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="305.0" y="191" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="346" y="172" width="74" height="28" fill="rgb(226,224,240)" stroke="#ccc"/>
-<text x="383.0" y="191" class="val" fill="#111" text-anchor="middle">0.164</text>
-<rect x="424" y="172" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="461.0" y="191" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="502" y="172" width="74" height="28" fill="rgb(245,242,250)" stroke="#ccc"/>
-<text x="539.0" y="191" class="val" fill="#111" text-anchor="middle">0.055</text>
-<rect x="580" y="172" width="74" height="28" fill="rgb(242,239,248)" stroke="#ccc"/>
-<text x="617.0" y="191" class="val" fill="#111" text-anchor="middle">0.070</text>
-<rect x="658" y="172" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="695.0" y="191" class="val" fill="#111" text-anchor="middle">0.000</text>
-<text x="770" y="191" class="val" text-anchor="middle">0.041</text>
-<text x="176" y="228" class="lbl" text-anchor="end">W4A8</text>
-<rect x="190" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="227.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="268" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="305.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="346" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="383.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="424" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="461.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="502" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="539.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="580" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="617.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<rect x="658" y="206" width="74" height="28" fill="rgb(255,252,255)" stroke="#ccc"/>
-<text x="695.0" y="225" class="val" fill="#111" text-anchor="middle">0.000</text>
-<text x="770" y="225" class="val" text-anchor="middle">0.000</text>
-<line x1="182" y1="169" x2="798" y2="169" stroke="#c1440e" stroke-width="1.6" stroke-dasharray="5 3"/>
-<text x="802" y="173" class="tag" fill="#c1440e">cliff</text>
-<line x1="20" y1="272" x2="880" y2="272" stroke="#ddd"/>
-<text x="20" y="292" class="tag">The cliff is at 8-bit ACTIVATIONS, not 8-bit weights: W8A16 is indistinguishable from FP32; W8A8 collapses.</text>
-<text x="20" y="310" class="tag">Closed-loop evaluation, three training seeds. Source: docs/results/ladder_pooled.json</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 372" width="880" height="372" role="img">
+<style>
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#101820}
+  .band-title{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}
+  .band-mark{font-size:12px;fill:#8A95A1;letter-spacing:1.4px}
+  .stage{font-size:11px;fill:#5C6874;letter-spacing:1.8px;font-weight:600}
+  .h{font-size:15px;font-weight:600}
+  .p{font-size:13px;fill:#5C6874}
+  .n{font-size:13px;font-weight:600}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2A6DB0}
+  .cap{font-size:12px;fill:#5C6874}
+  .ax{font-size:12px;fill:#5C6874}
+</style>
+<rect width="880" height="372" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="879" height="371" fill="none" stroke="#DFE5EB"/>
+<rect x="1" y="1" width="878" height="42" fill="#101820"/>
+<text x="20" y="27" class="band-title">CONTROL SUCCESS BY PRECISION · CLOSED-LOOP, SEVEN SEGMENTS</text>
+<text x="860" y="27" class="band-mark" text-anchor="end">RoboAccel</text>
+<text x="219.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 219.0 84)">forward</text>
+<text x="301.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 301.0 84)">reverse</text>
+<text x="383.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 383.0 84)">turn_left</text>
+<text x="465.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 465.0 84)">turn_right</text>
+<text x="547.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 547.0 84)">stop</text>
+<text x="629.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 629.0 84)">height</text>
+<text x="711.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 711.0 84)">combined</text>
+<text x="788" y="84" class="ax" text-anchor="middle" font-weight="600">mean</text>
+<text x="164" y="120" font-size="14" text-anchor="end">FP32</text>
+<rect x="178" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="216.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="260" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="298.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="342" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="380.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="424" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="462.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="506" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="544.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="588" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="626.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="670" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="708.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<text x="788" y="117" font-size="13.5" font-weight="700" text-anchor="middle">1.000</text>
+<text x="164" y="158" font-size="14" text-anchor="end" font-weight="700">W16A16</text>
+<text x="164" y="171" font-size="10.5" fill="#2A6DB0" text-anchor="end" letter-spacing="1.2" font-weight="600">DEPLOYED</text>
+<rect x="178" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="216.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="260" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="298.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="342" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="380.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="424" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="462.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="506" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="544.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="588" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="626.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="670" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="708.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<text x="788" y="155" font-size="13.5" font-weight="700" text-anchor="middle">1.000</text>
+<text x="164" y="196" font-size="14" text-anchor="end">W8A16</text>
+<rect x="178" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="216.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="260" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="298.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="342" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="380.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="424" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="462.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="506" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="544.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="588" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="626.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<rect x="670" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
+<text x="708.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
+<text x="788" y="193" font-size="13.5" font-weight="700" text-anchor="middle">1.000</text>
+<text x="164" y="234" font-size="14" text-anchor="end">W8A8</text>
+<rect x="178" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="216.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="260" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="298.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="342" y="210" width="77" height="31" fill="rgb(220,231,242)" stroke="#E6EBF0"/>
+<text x="380.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.164</text>
+<rect x="424" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="462.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="506" y="210" width="77" height="31" fill="rgb(243,247,250)" stroke="#E6EBF0"/>
+<text x="544.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.055</text>
+<rect x="588" y="210" width="77" height="31" fill="rgb(240,244,249)" stroke="#E6EBF0"/>
+<text x="626.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.070</text>
+<rect x="670" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="708.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<text x="788" y="231" font-size="13.5" font-weight="700" text-anchor="middle">0.041</text>
+<text x="164" y="272" font-size="14" text-anchor="end">W4A8</text>
+<rect x="178" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="216.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="260" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="298.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="342" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="380.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="424" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="462.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="506" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="544.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="588" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="626.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<rect x="670" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
+<text x="708.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
+<text x="788" y="269" font-size="13.5" font-weight="700" text-anchor="middle">0.000</text>
+<line x1="168" y1="206" x2="820" y2="206" stroke="#C1440E" stroke-width="2"/>
+<text x="162" y="200" class="ax" fill="#C1440E" text-anchor="end" font-weight="600">cliff</text>
+<line x1="16" y1="308" x2="864" y2="308" stroke="#E6EBF0"/>
+<text x="20" y="330" font-size="13"><tspan font-weight="600">The cliff is at 8-bit activations, not 8-bit weights.</tspan> W8A16 is indistinguishable from FP32; W8A8 collapses.</text>
+<text x="20" y="350" class="cap">One training seed, seven command segments, closed-loop in simulation. Source: docs/results/ladder_pooled.json</text>
 </svg>

@@ -24,16 +24,18 @@ from pathlib import Path
 
 import isaacgym  # noqa: F401  must precede torch
 
-QAT_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(QAT_ROOT))
+REPO = Path(__file__).resolve().parents[2]
+# roboaccel_quant lives under quantization/, one component over.
+sys.path.insert(0, str(REPO / "quantization"))
+QAT_ROOT = REPO / "training"
 
 import torch  # noqa: E402
 from wheel_legged_gym.envs import *  # noqa: F401,F403,E402
 from wheel_legged_gym.utils import get_args, task_registry  # noqa: E402
 from wheel_legged_gym.utils.helpers import class_to_dict  # noqa: E402
 
-from hwq.quant_policy import QuantActorCriticSequence  # noqa: E402
-from hwq.torch_hw import QuantConfig  # noqa: E402
+from roboaccel_quant.quant_policy import QuantActorCriticSequence  # noqa: E402
+from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 PRESETS = {
     "W16A16": QuantConfig(weight_bits=16, act_bits=16),   # the shipped datapath
@@ -126,7 +128,7 @@ def main() -> int:
     ap.add_argument("--save-interval", type=int, default=250)
     known, rest = ap.parse_known_args()
     if known.ideal_rounding:
-        import hwq.torch_hw as _th
+        import roboaccel_quant.torch_hw as _th
         _th.IDEAL_ROUNDING = True
         print('IDEAL_ROUNDING enabled: requantizer rounds half away from zero')
 

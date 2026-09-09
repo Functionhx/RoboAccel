@@ -10,7 +10,7 @@
 # Target is W8A8: the PTQ ladder puts the cliff at 8-bit activations, not at
 # 8-bit weights (W8A16 is intact), so that is where recovery is worth measuring.
 set -euo pipefail
-source /home/as/vllm/fpga/projects/rl_accel/qat/scripts/env_solid.sh
+source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/env_solid.sh"
 
 CKPT=${CKPT:-$QAT_ROOT/artifacts/solid_fp32/SOLID_FP32.pt}
 FRACS=${FRACS:-$QAT_ROOT/artifacts/ptq/act_fracs_a8.json}
