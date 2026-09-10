@@ -1,33 +1,45 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 190" width="880" height="190" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 340" width="1200" height="340" role="img">
 <style>
-  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#101820}
-  .band-title{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}
-  .band-mark{font-size:12px;fill:#8A95A1;letter-spacing:1.4px}
-  .stage{font-size:11px;fill:#5C6874;letter-spacing:1.8px;font-weight:600}
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#000000}
+  .band-title{font-size:14px;fill:#FFFFFF;font-weight:600}
+  .band-mark{font-size:12px;fill:#9A9A9A}
+  .stage{font-size:12px;fill:#8C8C8C;font-weight:600}
   .h{font-size:15px;font-weight:600}
-  .p{font-size:13px;fill:#5C6874}
+  .p{font-size:13px;fill:#8C8C8C}
   .n{font-size:13px;font-weight:600}
-  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2A6DB0}
-  .cap{font-size:12px;fill:#5C6874}
-  .ax{font-size:12px;fill:#5C6874}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .cap{font-size:12px;fill:#8C8C8C}
+  .ax{font-size:12px;fill:#8C8C8C}
 </style>
-<rect width="880" height="190" fill="#101820"/>
-<line x1="108" y1="150" x2="172" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<line x1="208" y1="150" x2="272" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<line x1="308" y1="150" x2="372" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<line x1="408" y1="150" x2="472" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<line x1="508" y1="150" x2="572" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<line x1="608" y1="150" x2="672" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<line x1="708" y1="150" x2="772" y2="150" stroke="#2C3A47" stroke-width="1"/>
-<rect x="74" y="141" width="32" height="18" rx="2" fill="#2A6DB0" stroke="#2A6DB0"/>
-<rect x="174" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
-<rect x="274" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
-<rect x="374" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
-<rect x="474" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
-<rect x="574" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
-<rect x="674" y="141" width="32" height="18" rx="2" fill="#16222E" stroke="#2C3A47"/>
-<rect x="774" y="141" width="32" height="18" rx="2" fill="#2A6DB0" stroke="#2A6DB0"/>
-<text x="440.0" y="76" text-anchor="middle" font-size="52" font-weight="700" fill="#F5F8FA" letter-spacing="-1">RoboAccel</text>
-<text x="440.0" y="104" text-anchor="middle" font-size="16" fill="#2A6DB0" letter-spacing="4.5">FROM RL POLICY TO REAL-TIME SILICON</text>
-<text x="440.0" y="128" text-anchor="middle" font-size="13" fill="#7C8996">End-to-end reinforcement-learning controller deployment for FPGA and Cortex-M7</text>
+<rect width="1200" height="340" fill="#FFFFFF"/>
+<text x="56" y="86" font-size="56" font-weight="700" fill="#000000" letter-spacing="-1.6">RoboAccel</text>
+<text x="56" y="120" font-size="17" fill="#000000">An RL policy, compiled to 13 integer instructions and run on silicon.</text>
+<line x1="56" y1="146" x2="1144" y2="146" stroke="#000000" stroke-width="1.4"/>
+<text x="56" y="176" font-size="14" fill="#000000">RTL simulation</text>
+<text x="56" y="192" font-size="11.5" fill="#8C8C8C">Icarus, make -C fpga/tb all</text>
+<text x="454" y="176" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">543</text>
+<text x="592" y="176" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">790</text>
+<text x="730" y="176" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">74</text>
+<text x="868" y="176" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">635</text>
+<text x="1006" y="176" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">478</text>
+<text x="1144" y="176" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">-796</text>
+<text x="56" y="216" font-size="14" fill="#000000">Zynq board, Vivado 2020.2</text>
+<text x="56" y="232" font-size="11.5" fill="#8C8C8C">UART console</text>
+<text x="454" y="216" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">543</text>
+<text x="592" y="216" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">790</text>
+<text x="730" y="216" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">74</text>
+<text x="868" y="216" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">635</text>
+<text x="1006" y="216" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">478</text>
+<text x="1144" y="216" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">-796</text>
+<text x="56" y="256" font-size="14" fill="#000000">Zynq board, Vivado 2026.1</text>
+<text x="56" y="272" font-size="11.5" fill="#8C8C8C">JTAG mailbox</text>
+<text x="454" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">543</text>
+<text x="592" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">790</text>
+<text x="730" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">74</text>
+<text x="868" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">635</text>
+<text x="1006" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">478</text>
+<text x="1144" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">-796</text>
+<path d="M388,284 L388,293 L1148,293 L1148,284" fill="none" stroke="#2F2AC8" stroke-width="1.4"/>
+<text x="768" y="314" text-anchor="middle" font-size="14" style="fill:#2F2AC8" font-weight="600">identical, bit for bit</text>
+<text x="56" y="314" font-size="12.5" style="fill:#8C8C8C">Actions in Q8.8, same reference input</text>
 </svg>

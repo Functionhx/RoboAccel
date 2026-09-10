@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 396" width="1200" height="396" role="img">
+<style>
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#000000}
+  .band-title{font-size:14px;fill:#FFFFFF;font-weight:600}
+  .band-mark{font-size:12px;fill:#9A9A9A}
+  .stage{font-size:12px;fill:#8C8C8C;font-weight:600}
+  .h{font-size:15px;font-weight:600}
+  .p{font-size:13px;fill:#8C8C8C}
+  .n{font-size:13px;font-weight:600}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .cap{font-size:12px;fill:#8C8C8C}
+  .ax{font-size:12px;fill:#8C8C8C}
+</style>
+<rect width="1200" height="396" fill="#FFFFFF"/>
+<rect x="0.5" y="0.5" width="1199" height="395" fill="none" stroke="#D8D8D8"/>
+<rect x="1" y="1" width="1198" height="42" fill="#000000"/>
+<text x="20" y="27" class="band-title">Figure 1 From a trained policy to a running robot</text>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8C8C8C"/></marker></defs>
+<rect x="34" y="86" width="225" height="152" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<rect x="34" y="86" width="225" height="27" fill="#F2F2F2"/>
+<text x="47" y="104" font-size="11.5" font-weight="700" style="fill:#000000">RL policy</text>
+<text x="47" y="132" font-size="9.5" style="fill:#8C8C8C">Trained once, on a workstation</text>
+<text x="47" y="156" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">PPO, wheel-legged balance</text>
+<text x="47" y="178" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">25 observations, 5-frame history</text>
+<text x="47" y="200" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">38,400 MAC in FP32</text>
+<line x1="269" y1="162" x2="357" y2="162" stroke="#2F2AC8" stroke-width="1.4" marker-end="url(#ar)"/>
+<text x="313" y="151" text-anchor="middle" font-size="10" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#2F2AC8">FP32 weights</text>
+<rect x="367" y="86" width="225" height="152" fill="#FFFFFF" stroke="#D8D8D8" stroke-width="1"/>
+<rect x="367" y="86" width="225" height="27" fill="#F2F2F2"/>
+<text x="380" y="104" font-size="11.5" font-weight="700" style="fill:#000000">Quantize and export</text>
+<text x="380" y="132" font-size="9.5" style="fill:#8C8C8C">Compiled once, on a workstation</text>
+<text x="380" y="156" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">INT16 weights, Q8.8 activations</text>
+<text x="380" y="178" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">per-GEMM weight scales</text>
+<text x="380" y="200" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">13 operator descriptors</text>
+<line x1="603" y1="162" x2="691" y2="162" stroke="#2F2AC8" stroke-width="1.4" marker-end="url(#ar)"/>
+<text x="647" y="151" text-anchor="middle" font-size="10" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#2F2AC8">128-bit × 13</text>
+<rect x="701" y="86" width="225" height="152" fill="#FFFFFF" stroke="#000000" stroke-width="1.6"/>
+<rect x="701" y="86" width="225" height="27" fill="#000000"/>
+<text x="714" y="104" font-size="11.5" font-weight="700" style="fill:#FFFFFF">PL accelerator</text>
+<text x="714" y="132" font-size="9.5" style="fill:#8C8C8C">Runs every control period</text>
+<text x="714" y="156" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">hardware sequencer</text>
+<text x="714" y="178" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">8×8 INT16 MAC, 72 DSP48E1</text>
+<text x="714" y="200" font-size="11.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">1,799 cycles, no branches</text>
+<line x1="936" y1="162" x2="1024" y2="162" stroke="#2F2AC8" stroke-width="1.4" marker-end="url(#ar)"/>
+<text x="980" y="151" text-anchor="middle" font-size="10" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#2F2AC8">action[6] Q8.8</text>
+<rect x="1034" y="120" width="132" height="84" fill="#F2F2F2" stroke="#D8D8D8"/>
+<text x="1100" y="156" text-anchor="middle" font-size="12.5" font-weight="700" fill="#000000">Robot</text>
+<text x="1100" y="176" text-anchor="middle" font-size="10.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">100 Hz loop</text>
+<path d="M1100,204 L1100,284 L147,284 L147,246" fill="none" stroke="#8C8C8C" stroke-width="1" stroke-dasharray="4 3" marker-end="url(#am)"/>
+<text x="600" y="275" text-anchor="middle" font-size="10.5" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#8C8C8C">25 observations return each period, and quantization is scored on what the robot does</text>
+<rect x="34" y="326" width="1132" height="36" fill="#FFFFFF" stroke="#2F2AC8" stroke-dasharray="3 3"/>
+<text x="49" y="349" font-size="11" font-weight="600" style="fill:#2F2AC8">Integer reference</text>
+<text x="184" y="349" font-size="11.5" style="fill:#8C8C8C">defines correctness for every stage to its right. The exporter, the RTL and both Cortex-M7 kernels must reproduce it exactly, not approximately.</text>
+</svg>

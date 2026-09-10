@@ -1,75 +1,74 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 560" width="880" height="560" role="img">
 <style>
-  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#101820}
-  .band-title{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}
-  .band-mark{font-size:12px;fill:#8A95A1;letter-spacing:1.4px}
-  .stage{font-size:11px;fill:#5C6874;letter-spacing:1.8px;font-weight:600}
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#000000}
+  .band-title{font-size:14px;fill:#FFFFFF;font-weight:600}
+  .band-mark{font-size:12px;fill:#9A9A9A}
+  .stage{font-size:12px;fill:#8C8C8C;font-weight:600}
   .h{font-size:15px;font-weight:600}
-  .p{font-size:13px;fill:#5C6874}
+  .p{font-size:13px;fill:#8C8C8C}
   .n{font-size:13px;font-weight:600}
-  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2A6DB0}
-  .cap{font-size:12px;fill:#5C6874}
-  .ax{font-size:12px;fill:#5C6874}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .cap{font-size:12px;fill:#8C8C8C}
+  .ax{font-size:12px;fill:#8C8C8C}
 </style>
 <rect width="880" height="560" fill="#FFFFFF"/>
-<rect x="0.5" y="0.5" width="879" height="559" fill="none" stroke="#DFE5EB"/>
-<rect x="1" y="1" width="878" height="42" fill="#101820"/>
-<text x="20" y="27" class="band-title">SYSTEM ARCHITECTURE</text>
-<text x="860" y="27" class="band-mark" text-anchor="end">RoboAccel</text>
-<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A6DB0"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0E7C61"/></marker></defs>
-<rect x="16" y="58" width="848" height="82" rx="3" fill="#F4F7FA" stroke="#E6EBF0"/>
-<text x="30" y="78" class="stage">TRAINING · EXTERNAL DEPENDENCY</text>
-<rect x="30" y="82" width="380" height="48" rx="3" fill="#FFFFFF" stroke="#8A95A1" stroke-width="1"/>
+<rect x="0.5" y="0.5" width="879" height="559" fill="none" stroke="#D8D8D8"/>
+<rect x="1" y="1" width="878" height="42" fill="#000000"/>
+<text x="20" y="27" class="band-title">Figure 2 How the pieces fit together</text>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8C8C8C"/></marker></defs>
+<rect x="16" y="58" width="848" height="82" rx="3" fill="#F2F2F2" stroke="#D8D8D8"/>
+<text x="30" y="78" class="stage">Training, an external dependency</text>
+<rect x="30" y="82" width="380" height="48" rx="3" fill="#FFFFFF" stroke="#8C8C8C" stroke-width="1"/>
 <text x="44" y="106" class="h">RL policy (PPO, Isaac Gym)</text>
 <text x="44" y="127" class="p">25 obs · 5-frame encoder · 4-layer actor · 6 actions</text>
 <text x="428" y="103" class="p">not vendored — the upstream environment</text>
 <text x="428" y="120" class="p">carries no licence. See NOTICE.md.</text>
-<rect x="16" y="156" width="848" height="96" rx="3" fill="#F4F7FA" stroke="#E6EBF0"/>
-<text x="30" y="176" class="stage">QUANTIZATION</text>
-<rect x="30" y="180" width="254" height="58" rx="3" fill="#FFFFFF" stroke="#101820" stroke-width="1.2"/>
+<rect x="16" y="156" width="848" height="96" rx="3" fill="#F2F2F2" stroke="#D8D8D8"/>
+<text x="30" y="176" class="stage">Quantization</text>
+<rect x="30" y="180" width="254" height="58" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="44" y="204" class="h">Calibrate + quantize</text>
 <text x="44" y="225" class="p">per-layer activation scales</text>
 <text x="44" y="242" class="mono">INT16 · Q8.8 · INT48 accumulate</text>
-<rect x="304" y="180" width="254" height="58" rx="3" fill="#FFFFFF" stroke="#2A6DB0" stroke-width="1.8"/>
+<rect x="304" y="180" width="254" height="58" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
 <text x="318" y="204" class="h">Fixed-point reference</text>
 <text x="318" y="225" class="p">NumPy integer, bit-accurate</text>
 <text x="318" y="242" class="mono">the arbiter</text>
-<rect x="578" y="180" width="272" height="58" rx="3" fill="#FFFFFF" stroke="#101820" stroke-width="1.2"/>
+<rect x="578" y="180" width="272" height="58" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="592" y="204" class="h">Arithmetic contract</text>
 <text x="592" y="225" class="p">7 GEMM · 5 ELU · 1 CONCAT</text>
 <text x="592" y="242" class="p">38,400 MAC</text>
-<rect x="16" y="268" width="848" height="106" rx="3" fill="#F4F7FA" stroke="#E6EBF0"/>
-<text x="30" y="288" class="stage">REFERENCE · INDEPENDENT VERIFICATION</text>
-<rect x="30" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#101820" stroke-width="1.2"/>
+<rect x="16" y="268" width="848" height="106" rx="3" fill="#F2F2F2" stroke="#D8D8D8"/>
+<text x="30" y="288" class="stage">Reference and independent verification</text>
+<rect x="30" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="42" y="322" font-size="13.5" font-weight="600">PyTorch fake-quant</text>
 <text x="42" y="340" class="cap">9/9 tensors, 4000 samples</text>
-<rect x="236" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#101820" stroke-width="1.2"/>
+<rect x="236" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="248" y="322" font-size="13.5" font-weight="600">FPGA descriptors</text>
 <text x="248" y="340" class="cap">13 descriptors</text>
-<rect x="442" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#0E7C61" stroke-width="1.8"/>
+<rect x="442" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
 <text x="454" y="322" font-size="13.5" font-weight="600">STM32 scalar C</text>
 <text x="454" y="340" class="cap">24 golden vectors</text>
-<text x="620" y="322" text-anchor="end" font-size="10.5" fill="#0E7C61" font-weight="600" letter-spacing="1">SILICON</text>
-<rect x="648" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#0E7C61" stroke-width="1.8"/>
+<text x="620" y="322" text-anchor="end" font-size="10.5" fill="#2F2AC8" font-weight="600" >on silicon</text>
+<rect x="648" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
 <text x="660" y="322" font-size="13.5" font-weight="600">STM32 SMLALD</text>
 <text x="660" y="340" class="cap">24 golden vectors</text>
-<text x="826" y="322" text-anchor="end" font-size="10.5" fill="#0E7C61" font-weight="600" letter-spacing="1">SILICON</text>
+<text x="826" y="322" text-anchor="end" font-size="10.5" fill="#2F2AC8" font-weight="600" >on silicon</text>
 <text x="30" y="374" class="cap">All four are compared against the NumPy integer reference. Zero mismatches. Two of them run on physical hardware.</text>
-<rect x="16" y="398" width="848" height="130" rx="3" fill="#F4F7FA" stroke="#E6EBF0"/>
-<text x="30" y="418" class="stage">DEPLOYMENT TARGETS</text>
-<rect x="30" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#2A6DB0" stroke-width="1.8"/>
+<rect x="16" y="398" width="848" height="130" rx="3" fill="#F2F2F2" stroke="#D8D8D8"/>
+<text x="30" y="418" class="stage">Deployment targets</text>
+<rect x="30" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
 <text x="44" y="448" class="h">RoboAccel FPGA — Zynq-7000</text>
 <text x="44" y="469" class="p">PL 100 MHz · 72 DSP48E1 · no DMA</text>
 <text x="44" y="486" class="p">descriptor sequencer, not fixed RTL</text>
 <text x="44" y="503" class="mono">17.99 µs pure inference (1,799 cycles)</text>
-<rect x="450" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#2A6DB0" stroke-width="1.8"/>
+<rect x="450" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
 <text x="464" y="448" class="h">STM32H723 — Cortex-M7</text>
 <text x="464" y="469" class="p">480 MHz · SMLALD SIMD · DTCM-resident</text>
 <text x="464" y="486" class="p">no accelerator, no external memory</text>
 <text x="464" y="503" class="mono">259.09 µs pure inference (on silicon)</text>
-<path d="M220,140 V176" stroke="#2A6DB0" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
-<path d="M660,140 V176" stroke="#2A6DB0" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
-<path d="M440,240 V296" stroke="#2A6DB0" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
-<path d="M440,386 V420" stroke="#2A6DB0" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M220,140 V176" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M660,140 V176" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M440,240 V296" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M440,386 V420" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
 <text x="16" y="546" class="cap">One arithmetic definition is shared by every stage. The same integer program runs on both targets and is checked against the same reference.</text>
 </svg>

@@ -9,6 +9,19 @@ docs/SOLID_POLICY_DEPLOYMENT_MAPPING.md and fpga/docs/02_system_architecture.md.
 
     python3 assets/make_figures.py
 
+The visual language is an engineering drawing: true black on white, one
+plotter-blue accent reserved for measured values, and failure drawn as
+diagonal hatch rather than as a second colour. Drafting is the vernacular this
+subject already lives in, and hatch-for-failure survives greyscale and
+colour-blindness in a way a red/green pair does not.
+
+Deliberately absent, because they are the tells of a generated page rather
+than choices made for this subject: tracked-out all-caps labels above content,
+meta strings joined with middle dots, captions built as WORD-emdash-fragment,
+a tinted near-black standing in for black, and monospace used as label
+texture. Monospace appears only where the glyphs are data -- register values,
+cycle counts, action integers.
+
 Figures are white-ground with a dark title band, which renders identically in
 GitHub light and dark mode -- an <img>-embedded SVG does not inherit the page
 theme, so a transparent ground would be unreadable in one of them.
@@ -24,16 +37,19 @@ RESULTS = HERE.parent / "docs" / "results"
 
 # ---------------------------------------------------------------- theme
 
-INK      = "#101820"   # near-black, title bands and primary text
+# Four values. Black is black, not a tinted stand-in for it; the accent is a
+# plotter-pen blue and is spent only on values that were measured.
+INK      = "#000000"   # linework and primary text
 PAPER    = "#FFFFFF"
-FRAME    = "#DFE5EB"   # figure border
-RULE     = "#E6EBF0"   # internal hairlines
-MUTED    = "#5C6874"   # captions, axis labels
-FAINT    = "#8A95A1"
-STEEL    = "#2A6DB0"   # primary accent: the datapath
-CLAY     = "#C1440E"   # attention: failure, thresholds
-VERIFY   = "#0E7C61"   # verified on silicon
-BAND     = "#F4F7FA"   # stage band fill
+PLOT     = "#2F2AC8"   # measured values, and only those
+GHOST    = "#8C8C8C"   # secondary text, hatch, construction lines
+
+# Aliases kept so the older figures keep compiling against one palette.
+FRAME = RULE = HAIR = "#D8D8D8"
+MUTED = LABEL = FAINT = GHOST
+STEEL = VERIFY = PLOT
+CLAY  = INK            # failure is hatch, not a colour
+BAND  = "#F2F2F2"
 
 SANS = "'Helvetica Neue',Helvetica,Arial,sans-serif"
 MONO = "ui-monospace,'SF Mono',Menlo,Consolas,monospace"
@@ -49,9 +65,9 @@ FACTS = {
 
 CSS = f"""
   text{{font-family:{SANS};fill:{INK}}}
-  .band-title{{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}}
-  .band-mark{{font-size:12px;fill:{FAINT};letter-spacing:1.4px}}
-  .stage{{font-size:11px;fill:{MUTED};letter-spacing:1.8px;font-weight:600}}
+  .band-title{{font-size:14px;fill:{PAPER};font-weight:600}}
+  .band-mark{{font-size:12px;fill:#9A9A9A}}
+  .stage{{font-size:12px;fill:{MUTED};font-weight:600}}
   .h{{font-size:15px;font-weight:600}}
   .p{{font-size:13px;fill:{MUTED}}}
   .n{{font-size:13px;font-weight:600}}
@@ -61,8 +77,16 @@ CSS = f"""
 """
 
 
-def frame(w: int, h: int, title: str, mark: str = "RoboAccel") -> list[str]:
-    """Open an SVG with the shared border and dark title band."""
+def frame(w: int, h: int, title: str, mark: str = "",
+          fig: int | None = None) -> list[str]:
+    """Open an SVG with the shared border and dark title band.
+
+    `fig` prints the figure number into the band so the number travels with the
+    image itself; a caption in the README alone would drift the first time a
+    section is reordered.
+    """
+    if fig is not None:
+        title = f"Figure {fig}\u2003{title}"
     return [
         f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" '
         f'width="{w}" height="{h}" role="img">\n',
@@ -72,8 +96,25 @@ def frame(w: int, h: int, title: str, mark: str = "RoboAccel") -> list[str]:
         f'stroke="{FRAME}"/>\n',
         f'<rect x="1" y="1" width="{w-2}" height="42" fill="{INK}"/>\n',
         f'<text x="20" y="27" class="band-title">{title}</text>\n',
-        f'<text x="{w-20}" y="27" class="band-mark" text-anchor="end">{mark}</text>\n',
+        # No repeated wordmark in the corner: the page it sits on is already
+        # titled RoboAccel, so it would be decoration, not information.
+        *([f'<text x="{w-20}" y="27" class="band-mark" '
+           f'text-anchor="end">{mark}</text>\n'] if mark else []),
     ]
+
+
+def hatchdefs() -> str:
+    """Diagonal hatch: what a drawing uses for a section that is not solid.
+
+    Failure is drawn with this rather than with a red, so the figures survive
+    greyscale printing and red/green colour blindness, and so the palette does
+    not need a second accent.
+    """
+    return (f'<defs><pattern id="hatch" width="6" height="6" '
+            f'patternUnits="userSpaceOnUse" patternTransform="rotate(45)">'
+            f'<rect width="6" height="6" fill="{PAPER}"/>'
+            f'<line x1="0" y1="0" x2="0" y2="6" stroke="{GHOST}" '
+            f'stroke-width="1.6"/></pattern></defs>\n')
 
 
 def arrowdefs() -> str:
@@ -84,36 +125,159 @@ def arrowdefs() -> str:
             f'<marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" '
             f'markerWidth="6" markerHeight="6" orient="auto">'
             f'<path d="M0,0 L10,5 L0,10 z" fill="{VERIFY}"/></marker>'
+            f'<marker id="am" viewBox="0 0 10 10" refX="9" refY="5" '
+            f'markerWidth="6" markerHeight="6" orient="auto">'
+            f'<path d="M0,0 L10,5 L0,10 z" fill="{MUTED}"/></marker>'
             f'</defs>\n')
 
 
-# ---------------------------------------------------------------- 1. header
+# ---------------------------------------------------------------- 1. masthead
+
+# The six integers the deployed policy returns for the reference input, and the
+# three independent paths that produce them. Verbatim from
+# fpga/docs/09_hardware_test_20260821.md (RTL golden and the 2020.2 UART board)
+# and fpga/docs/11_mini7010_vivado2026_port.md (the 2026.1 JTAG mailbox).
+ACTIONS = ["543", "790", "74", "635", "478", "-796"]
+PATHS = [
+    ("RTL simulation", "Icarus, make -C fpga/tb all"),
+    ("Zynq board, Vivado 2020.2", "UART console"),
+    ("Zynq board, Vivado 2026.1", "JTAG mailbox"),
+]
+
 
 def header() -> str:
-    w, h = 880, 190
+    """Open with the artifact, not with a banner about the artifact.
+
+    Three independently built paths return the same six integers for the same
+    input. That is the whole claim of the project, it cannot be faked, and it
+    is legible in about two seconds -- which a wordmark on a dark ground is
+    not.
+    """
+    w, h = 1200, 340
     o = [f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" '
          f'width="{w}" height="{h}" role="img">\n', f"<style>{CSS}</style>\n",
-         f'<rect width="{w}" height="{h}" fill="{INK}"/>\n']
-    # a quiet datapath motif along the bottom: obs -> layers -> action
-    y = 150
-    xs = [90, 190, 290, 390, 490, 590, 690, 790]
-    for i, x in enumerate(xs[:-1]):
-        o.append(f'<line x1="{x+18}" y1="{y}" x2="{xs[i+1]-18}" y2="{y}" '
-                 f'stroke="#2C3A47" stroke-width="1"/>\n')
-    for i, x in enumerate(xs):
-        edge = i in (0, len(xs) - 1)
-        o.append(f'<rect x="{x-16}" y="{y-9}" width="32" height="18" rx="2" '
-                 f'fill="{"#16222E" if not edge else STEEL}" '
-                 f'stroke="{"#2C3A47" if not edge else STEEL}"/>\n')
-    o.append(f'<text x="{w/2}" y="76" text-anchor="middle" '
-             f'font-size="52" font-weight="700" fill="#F5F8FA" '
-             f'letter-spacing="-1">RoboAccel</text>\n')
-    o.append(f'<text x="{w/2}" y="104" text-anchor="middle" font-size="16" '
-             f'fill="{STEEL}" letter-spacing="4.5">FROM RL POLICY TO '
-             f'REAL-TIME SILICON</text>\n')
-    o.append(f'<text x="{w/2}" y="128" text-anchor="middle" font-size="13" '
-             f'fill="#7C8996">End-to-end reinforcement-learning controller '
-             f'deployment for FPGA and Cortex-M7</text>\n')
+         f'<rect width="{w}" height="{h}" fill="{PAPER}"/>\n']
+
+    o.append(f'<text x="56" y="86" font-size="56" font-weight="700" '
+             f'fill="{INK}" letter-spacing="-1.6">RoboAccel</text>\n')
+    o.append(f'<text x="56" y="120" font-size="17" fill="{INK}">'
+             f'An RL policy, compiled to 13 integer instructions and run on '
+             f'silicon.</text>\n')
+
+    # the evidence block: one column per action, right-aligned like a register
+    col0, colw = 454, 138
+    top = 176
+    o.append(f'<line x1="56" y1="{top-30}" x2="{w-56}" y2="{top-30}" '
+             f'stroke="{INK}" stroke-width="1.4"/>\n')
+    for i, (name, how) in enumerate(PATHS):
+        y = top + i * 40
+        o.append(f'<text x="56" y="{y}" font-size="14" fill="{INK}">'
+                 f'{name}</text>\n')
+        o.append(f'<text x="56" y="{y+16}" font-size="11.5" fill="{GHOST}">'
+                 f'{how}</text>\n')
+        for j, a in enumerate(ACTIONS):
+            o.append(f'<text x="{col0+j*colw}" y="{y}" text-anchor="end" '
+                     f'font-size="21" font-family="{MONO}" fill="{INK}">'
+                     f'{a}</text>\n')
+
+    # the brace that says these are the same numbers
+    by = top + 3 * 40 - 12
+    x0, x1 = col0 - 66, col0 + 5 * colw + 4
+    o.append(f'<path d="M{x0},{by} L{x0},{by+9} L{x1},{by+9} L{x1},{by}" '
+             f'fill="none" stroke="{PLOT}" stroke-width="1.4"/>\n')
+    o.append(f'<text x="{(x0+x1)/2:.0f}" y="{by+30}" text-anchor="middle" '
+             f'font-size="14" style="fill:{PLOT}" font-weight="600">'
+             f'identical, bit for bit</text>\n')
+    o.append(f'<text x="56" y="{by+30}" font-size="12.5" style="fill:{GHOST}">'
+             f'Actions in Q8.8, same reference input</text>\n')
+    o.append("</svg>\n")
+    return "".join(o)
+
+
+# ---------------------------------------------------------------- 1b. figure 1
+
+# Functional block diagram. Bus labels carry real widths and formats so the
+# arrows say what actually crosses them, the way a datasheet's do.
+CHAIN = [
+    ("RL policy", "Trained once, on a workstation",
+     ["PPO, wheel-legged balance", "25 observations, 5-frame history",
+      "38,400 MAC in FP32"]),
+    ("Quantize and export", "Compiled once, on a workstation",
+     ["INT16 weights, Q8.8 activations", "per-GEMM weight scales",
+      "13 operator descriptors"]),
+    ("PL accelerator", "Runs every control period",
+     ["hardware sequencer", "8\u00d78 INT16 MAC, 72 DSP48E1",
+      "1,799 cycles, no branches"]),
+]
+BUSES = ["FP32 weights", "128-bit \u00d7 13", "action[6] Q8.8"]
+
+
+def block_diagram() -> str:
+    w, h = 1200, 396
+    o = frame(w, h, "From a trained policy to a running robot", fig=1)
+    o.append(arrowdefs())
+    pad, gap, rw = 34, 108, 132
+    n = len(CHAIN)
+    cw = (w - 2 * pad - gap * n - rw) / n
+    top, bh = 86, 152
+    mid = top + bh / 2
+
+    for i, (title, where, lines) in enumerate(CHAIN):
+        x = pad + i * (cw + gap)
+        deployed = i == n - 1
+        o.append(f'<rect x="{x:.0f}" y="{top}" width="{cw:.0f}" height="{bh}" '
+                 f'fill="{PAPER}" stroke="{INK if deployed else FRAME}" '
+                 f'stroke-width="{1.6 if deployed else 1}"/>\n')
+        o.append(f'<rect x="{x:.0f}" y="{top}" width="{cw:.0f}" height="27" '
+                 f'fill="{INK if deployed else BAND}"/>\n')
+        o.append(f'<text x="{x+13:.0f}" y="{top+18}" font-size="11.5" '
+                 f'font-weight="700" '
+                 f'style="fill:{PAPER if deployed else INK}">'
+                 f'{title}</text>\n')
+        o.append(f'<text x="{x+13:.0f}" y="{top+46}" font-size="9.5" '
+                 f'style="fill:{GHOST}">{where}</text>\n')
+        for j, line in enumerate(lines):
+            o.append(f'<text x="{x+13:.0f}" y="{top+70+j*22}" font-size="11.5" '
+                     f'font-family="{MONO}" fill="{MUTED}">{line}</text>\n')
+        ax0, ax1 = x + cw + 10, x + cw + gap - 10
+        o.append(f'<line x1="{ax0:.0f}" y1="{mid:.0f}" x2="{ax1:.0f}" '
+                 f'y2="{mid:.0f}" stroke="{STEEL}" stroke-width="1.4" '
+                 f'marker-end="url(#ar)"/>\n')
+        o.append(f'<text x="{(ax0+ax1)/2:.0f}" y="{mid-11:.0f}" '
+                 f'text-anchor="middle" font-size="10" font-family="{MONO}" '
+                 f'fill="{STEEL}">{BUSES[i]}</text>\n')
+
+    rx = pad + n * (cw + gap)
+    o.append(f'<rect x="{rx:.0f}" y="{top+34:.0f}" width="{rw}" '
+             f'height="{bh-68}" fill="{BAND}" stroke="{FRAME}"/>\n')
+    o.append(f'<text x="{rx+rw/2:.0f}" y="{mid-6:.0f}" text-anchor="middle" '
+             f'font-size="12.5" font-weight="700" '
+             f'fill="{INK}">Robot</text>\n')
+    o.append(f'<text x="{rx+rw/2:.0f}" y="{mid+14:.0f}" text-anchor="middle" '
+             f'font-size="10.5" font-family="{MONO}" fill="{MUTED}">'
+             f'100 Hz loop</text>\n')
+
+    # The loop is closed: quantization is judged by what the robot does, which
+    # is the whole argument of the project.
+    fy = top + bh + 46
+    o.append(f'<path d="M{rx+rw/2:.0f},{top+bh-34:.0f} L{rx+rw/2:.0f},{fy} '
+             f'L{pad+cw/2:.0f},{fy} L{pad+cw/2:.0f},{top+bh+8}" fill="none" '
+             f'stroke="{MUTED}" stroke-width="1" stroke-dasharray="4 3" '
+             f'marker-end="url(#am)"/>\n')
+    o.append(f'<text x="{w/2:.0f}" y="{fy-9}" text-anchor="middle" '
+             f'font-size="10.5" font-family="{MONO}" fill="{MUTED}">'
+             f'25 observations return each period, and quantization is '
+             f'scored on what the robot does</text>\n')
+
+    ay = fy + 42
+    o.append(f'<rect x="{pad}" y="{ay}" width="{w-2*pad}" height="36" '
+             f'fill="{PAPER}" stroke="{VERIFY}" stroke-dasharray="3 3"/>\n')
+    o.append(f'<text x="{pad+15}" y="{ay+23}" font-size="11" font-weight="600" '
+             f'style="fill:{PLOT}">Integer reference</text>\n')
+    o.append(f'<text x="{pad+150}" y="{ay+23}" font-size="11.5" '
+             f'style="fill:{GHOST}">defines correctness for every stage to its '
+             f'right. The exporter, the RTL and both Cortex-M7 kernels must '
+             f'reproduce it exactly, not approximately.</text>\n')
     o.append("</svg>\n")
     return "".join(o)
 
@@ -122,7 +286,7 @@ def header() -> str:
 
 def architecture() -> str:
     w, h = 880, 560
-    o = frame(w, h, "SYSTEM ARCHITECTURE")
+    o = frame(w, h, "How the pieces fit together", fig=2)
     o.append(arrowdefs())
 
     def band(y, bh, label):
@@ -140,7 +304,7 @@ def architecture() -> str:
                      f'{t.strip("`")}</text>\n')
 
     # -- TRAINING
-    band(58, 82, "TRAINING · EXTERNAL DEPENDENCY")
+    band(58, 82, "Training, an external dependency")
     box(30, 82, 380, 48, "RL policy (PPO, Isaac Gym)",
         [FACTS["topology"]], stroke=FAINT, sw=1)
     o.append(f'<text x="428" y="103" class="p">not vendored — the upstream '
@@ -149,7 +313,7 @@ def architecture() -> str:
              f'NOTICE.md.</text>\n')
 
     # -- QUANTIZATION
-    band(156, 96, "QUANTIZATION")
+    band(156, 96, "Quantization")
     box(30, 180, 254, 58, "Calibrate + quantize",
         ["per-layer activation scales", "`INT16 · Q8.8 · INT48 accumulate`"])
     box(304, 180, 254, 58, "Fixed-point reference",
@@ -158,7 +322,7 @@ def architecture() -> str:
         [FACTS["operators"], FACTS["mac"]])
 
     # -- VERIFICATION
-    band(268, 106, "REFERENCE · INDEPENDENT VERIFICATION")
+    band(268, 106, "Reference and independent verification")
     vy = 300
     for i, (t, sub, silicon) in enumerate([
             ("PyTorch fake-quant", "9/9 tensors, 4000 samples", False),
@@ -176,13 +340,13 @@ def architecture() -> str:
         if silicon:
             o.append(f'<text x="{x+178}" y="{vy+22}" text-anchor="end" '
                      f'font-size="10.5" fill="{VERIFY}" font-weight="600" '
-                     f'letter-spacing="1">SILICON</text>\n')
+                     f'>on silicon</text>\n')
     o.append(f'<text x="30" y="{vy+74}" class="cap">All four are compared '
              f'against the NumPy integer reference. Zero mismatches. Two of '
              f'them run on physical hardware.</text>\n')
 
     # -- DEPLOYMENT
-    band(398, 130, "DEPLOYMENT TARGETS")
+    band(398, 130, "Deployment targets")
     box(30, 424, 400, 92, "RoboAccel FPGA — Zynq-7000",
         ["PL 100 MHz · 72 DSP48E1 · no DMA",
          "descriptor sequencer, not fixed RTL",
@@ -211,7 +375,7 @@ def architecture() -> str:
 
 def verification() -> str:
     w, h = 880, 400
-    o = frame(w, h, "VERIFICATION CHAIN · ONE ARITHMETIC, FIVE IMPLEMENTATIONS")
+    o = frame(w, h, "One arithmetic, five implementations", fig=3)
     o.append(arrowdefs())
 
     o.append(f'<rect x="300" y="66" width="280" height="62" rx="3" '
@@ -219,7 +383,7 @@ def verification() -> str:
     o.append('<text x="440" y="90" text-anchor="middle" font-size="15.5" '
              'font-weight="600">NumPy integer reference</text>\n')
     o.append(f'<text x="440" y="112" text-anchor="middle" class="cap">'
-             f'the arbiter — defines what is correct</text>\n')
+             f'the arbiter: it defines what is correct</text>\n')
 
     impls = [
         ("PyTorch fake-quant", "9/9 tensors exact", "4000 samples", False),
@@ -239,22 +403,21 @@ def verification() -> str:
         o.append(f'<text x="{x+14}" y="{by+50}" font-size="13" '
                  f'font-weight="600" fill="{col}">{r1}</text>\n')
         o.append(f'<text x="{x+14}" y="{by+70}" class="cap">{r2}</text>\n')
-        badge = "ON SILICON" if silicon else "HOST"
+        badge = "on silicon" if silicon else "on the host"
         bcol = VERIFY if silicon else FAINT
         o.append(f'<text x="{x+14}" y="{by+86}" font-size="10.5" '
-                 f'fill="{bcol}" letter-spacing="1.4" '
-                 f'font-weight="600">{badge}</text>\n')
+                 f'style="fill:{bcol}">{badge}</text>\n')
         mk = "url(#ag)" if silicon else "url(#ar)"
         o.append(f'<path d="M440,128 V166 H{x+98} V{by-4}" stroke="{col}" '
                  f'stroke-width="1.3" fill="none" marker-end="{mk}"/>\n')
 
     o.append(f'<line x1="16" y1="336" x2="{w-16}" y2="336" stroke="{RULE}"/>\n')
-    o.append(f'<text x="20" y="358" class="cap">A controller that looks correct '
-             f'in PyTorch but differs numerically on the target is not '
-             f'validated. Each path re-derives the arithmetic independently:</text>\n')
-    o.append(f'<text x="20" y="377" class="cap">the FPGA exporter shares no '
-             f'code with the quantization library and still produces the '
-             f'identical program and the identical per-layer scales.</text>\n')
+    o.append(f'<text x="20" y="358" class="cap">A controller correct in PyTorch '
+             f'but different on the target has not been validated. Each path '
+             f're-derives the arithmetic on its own:</text>\n')
+    o.append(f'<text x="20" y="377" class="cap">the FPGA exporter shares no code '
+             f'with the quantization library, yet derives the same program and '
+             f'the same per-layer scales.</text>\n')
     o.append("</svg>\n")
     return "".join(o)
 
@@ -273,7 +436,8 @@ def precision_cliff() -> str:
 
     w, h = 880, 372
     x0, y0, cw, ch = 178, 96, 82, 38
-    o = frame(w, h, "CONTROL SUCCESS BY PRECISION · CLOSED-LOOP, SEVEN SEGMENTS")
+    o = frame(w, h, "Closed-loop control success, by precision", fig=4)
+    o.append(hatchdefs())
 
     for j, s in enumerate(SEGMENTS):
         cx = x0 + j * cw + cw / 2
@@ -289,30 +453,42 @@ def precision_cliff() -> str:
         o.append(f'<text x="164" y="{y+24}" font-size="14" '
                  f'text-anchor="end"{bold}>{name}</text>\n')
         if deployed:
-            o.append(f'<text x="164" y="{y+37}" font-size="10.5" '
-                     f'fill="{STEEL}" text-anchor="end" letter-spacing="1.2" '
-                     f'font-weight="600">DEPLOYED</text>\n')
+            o.append(f'<text x="164" y="{y+37}" font-size="11" '
+                     f'style="fill:{PLOT}" text-anchor="end">deployed</text>\n')
         for j, v in enumerate(vals):
-            # one perceptual ramp from paper to steel
-            r = int(255 - (255 - 0x2A) * v)
-            g = int(255 - (255 - 0x6D) * v)
-            b = int(255 - (255 - 0xB0) * v)
-            tc = "#FFFFFF" if v > 0.55 else INK
-            o.append(f'<rect x="{x0+j*cw}" y="{y}" width="{cw-5}" '
-                     f'height="{ch-7}" fill="rgb({r},{g},{b})" '
-                     f'stroke="{RULE}"/>\n')
-            o.append(f'<text x="{x0+j*cw+(cw-5)/2}" y="{y+21}" font-size="13" '
-                     f'font-weight="600" fill="{tc}" text-anchor="middle">'
-                     f'{v:.3f}</text>\n')
+            # A segment either holds the command or it does not. Solid ink for a
+            # pass, hatch for a failure -- so the cliff is legible in greyscale
+            # and needs no second colour. The partial values in between are the
+            # honest middle, drawn at proportional ink.
+            cx, cyw = x0 + j * cw, cw - 5
+            if v >= 0.999:
+                fill = INK
+            elif v <= 0.001:
+                fill = "url(#hatch)"
+            else:
+                g = int(255 - 255 * v)
+                fill = f"rgb({g},{g},{g})"
+            o.append(f'<rect x="{cx}" y="{y}" width="{cyw}" '
+                     f'height="{ch-7}" fill="{fill}" stroke="{INK}" '
+                     f'stroke-width="0.8"/>\n')
+            tc = PAPER if v > 0.55 else INK
+            o.append(f'<text x="{cx+cyw/2}" y="{y+21}" font-size="13" '
+                     f'font-weight="600" style="fill:{tc}" text-anchor="middle" '
+                     f'font-family="{MONO}">{v:.3f}</text>\n')
         m = sum(vals) / len(vals)
         o.append(f'<text x="{x0+7*cw+36}" y="{y+21}" font-size="13.5" '
-                 f'font-weight="700" text-anchor="middle">{m:.3f}</text>\n')
+                 f'font-weight="700" text-anchor="middle" '
+                 f'font-family="{MONO}">{m:.3f}</text>\n')
 
     yc = y0 + 3 * ch - 4
-    o.append(f'<line x1="{x0-10}" y1="{yc}" x2="{x0+7*cw+68}" y2="{yc}" '
-             f'stroke="{CLAY}" stroke-width="2"/>\n')
-    o.append(f'<text x="{x0-16}" y="{yc-6}" class="ax" fill="{CLAY}" '
-             f'text-anchor="end" font-weight="600">cliff</text>\n')
+    o.append(f'<line x1="{x0-10}" y1="{yc}" x2="{x0+7*cw+70}" y2="{yc}" '
+             f'style="stroke:{PLOT}" stroke-width="2"/>\n')
+    # Sits to the RIGHT of the rule: at the left it lands on the W8A16 row
+    # label, and an annotation that collides with the data it annotates is
+    # worse than no annotation.
+    o.append(f'<text x="{x0+7*cw+76}" y="{yc+4}" class="ax" '
+             f'style="fill:{PLOT}" text-anchor="start" '
+             f'font-weight="600">cliff</text>\n')
 
     o.append(f'<line x1="16" y1="{h-64}" x2="{w-16}" y2="{h-64}" '
              f'stroke="{RULE}"/>\n')
@@ -343,7 +519,7 @@ def kl_mechanism() -> str:
     sx = lambda i: x0 + (i + 0.5) * pw / len(arms)
     sy = lambda v: y0 + ph - (math.log10(v) - lo) / (hi - lo) * ph
 
-    o = frame(w, h, "QUANTIZATION KL FLOOR vs PPO's LEARNING-RATE CONTROLLER")
+    o = frame(w, h, "The quantization KL floor, against PPO's controller", fig=6)
     o.append(f'<text x="20" y="66" class="cap">Policy KL produced by one Adam '
              f'step at the learning-rate floor (1e-5) — same parameters, same '
              f'observations, quantizer on and off.</text>\n')
@@ -381,7 +557,7 @@ def kl_mechanism() -> str:
                  f'text-anchor="middle">{a}</text>\n')
         o.append(f'<text x="{x:.1f}" y="{y0+ph+40}" font-size="11.5" '
                  f'fill="{col}" text-anchor="middle" font-weight="600">'
-                 f'{"QAT FAILS" if bad else "QAT WORKS"}</text>\n')
+                 f'{"QAT fails" if bad else "QAT works"}</text>\n')
 
     o.append(f'<line x1="{x0}" y1="{y0+ph}" x2="{x0+pw}" y2="{y0+ph}" '
              f'stroke="{INK}"/>\n')
@@ -428,7 +604,7 @@ def perturbation_response() -> str:
     sx = lambda v: x0 + (math.log10(v) - xlo) / (xhi - xlo) * pw
     sy = lambda v: y0 + ph - (math.log10(v) - ylo) / (yhi - ylo) * ph
 
-    o = frame(w, h, "PERTURBATION RESPONSE · POLICY KL vs WEIGHT STEP SIZE")
+    o = frame(w, h, "Policy KL against weight step size", fig=5)
     o.append(f'<text x="20" y="66" class="cap">Identical perturbation '
              f'procedure, states and KL definition for every arm. '
              f'12 trials per point. Zero-KL points are omitted (log axis).</text>\n')
@@ -494,6 +670,7 @@ def perturbation_response() -> str:
 
 FIGURES = {
     "header.svg": header,
+    "block_diagram.svg": block_diagram,
     "architecture.svg": architecture,
     "verification_chain.svg": verification,
     "precision_cliff.svg": precision_cliff,

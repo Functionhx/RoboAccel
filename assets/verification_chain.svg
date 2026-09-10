@@ -1,50 +1,49 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 400" width="880" height="400" role="img">
 <style>
-  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#101820}
-  .band-title{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}
-  .band-mark{font-size:12px;fill:#8A95A1;letter-spacing:1.4px}
-  .stage{font-size:11px;fill:#5C6874;letter-spacing:1.8px;font-weight:600}
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#000000}
+  .band-title{font-size:14px;fill:#FFFFFF;font-weight:600}
+  .band-mark{font-size:12px;fill:#9A9A9A}
+  .stage{font-size:12px;fill:#8C8C8C;font-weight:600}
   .h{font-size:15px;font-weight:600}
-  .p{font-size:13px;fill:#5C6874}
+  .p{font-size:13px;fill:#8C8C8C}
   .n{font-size:13px;font-weight:600}
-  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2A6DB0}
-  .cap{font-size:12px;fill:#5C6874}
-  .ax{font-size:12px;fill:#5C6874}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .cap{font-size:12px;fill:#8C8C8C}
+  .ax{font-size:12px;fill:#8C8C8C}
 </style>
 <rect width="880" height="400" fill="#FFFFFF"/>
-<rect x="0.5" y="0.5" width="879" height="399" fill="none" stroke="#DFE5EB"/>
-<rect x="1" y="1" width="878" height="42" fill="#101820"/>
-<text x="20" y="27" class="band-title">VERIFICATION CHAIN · ONE ARITHMETIC, FIVE IMPLEMENTATIONS</text>
-<text x="860" y="27" class="band-mark" text-anchor="end">RoboAccel</text>
-<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2A6DB0"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#0E7C61"/></marker></defs>
-<rect x="300" y="66" width="280" height="62" rx="3" fill="#FFFFFF" stroke="#2A6DB0" stroke-width="2"/>
+<rect x="0.5" y="0.5" width="879" height="399" fill="none" stroke="#D8D8D8"/>
+<rect x="1" y="1" width="878" height="42" fill="#000000"/>
+<text x="20" y="27" class="band-title">Figure 3 One arithmetic, five implementations</text>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8C8C8C"/></marker></defs>
+<rect x="300" y="66" width="280" height="62" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="2"/>
 <text x="440" y="90" text-anchor="middle" font-size="15.5" font-weight="600">NumPy integer reference</text>
-<text x="440" y="112" text-anchor="middle" class="cap">the arbiter — defines what is correct</text>
-<rect x="24" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#101820" stroke-width="1.2"/>
+<text x="440" y="112" text-anchor="middle" class="cap">the arbiter: it defines what is correct</text>
+<rect x="24" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="38" y="234" font-size="14" font-weight="600">PyTorch fake-quant</text>
-<text x="38" y="258" font-size="13" font-weight="600" fill="#101820">9/9 tensors exact</text>
+<text x="38" y="258" font-size="13" font-weight="600" fill="#000000">9/9 tensors exact</text>
 <text x="38" y="278" class="cap">4000 samples</text>
-<text x="38" y="294" font-size="10.5" fill="#8A95A1" letter-spacing="1.4" font-weight="600">HOST</text>
-<path d="M440,128 V166 H122 V204" stroke="#101820" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
-<rect x="236" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#101820" stroke-width="1.2"/>
+<text x="38" y="294" font-size="10.5" style="fill:#8C8C8C">on the host</text>
+<path d="M440,128 V166 H122 V204" stroke="#000000" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+<rect x="236" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="250" y="234" font-size="14" font-weight="600">FPGA descriptors</text>
-<text x="250" y="258" font-size="13" font-weight="600" fill="#101820">13 instructions</text>
+<text x="250" y="258" font-size="13" font-weight="600" fill="#000000">13 instructions</text>
 <text x="250" y="278" class="cap">7 weight fracs</text>
-<text x="250" y="294" font-size="10.5" fill="#8A95A1" letter-spacing="1.4" font-weight="600">HOST</text>
-<path d="M440,128 V166 H334 V204" stroke="#101820" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
-<rect x="448" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#0E7C61" stroke-width="2"/>
+<text x="250" y="294" font-size="10.5" style="fill:#8C8C8C">on the host</text>
+<path d="M440,128 V166 H334 V204" stroke="#000000" stroke-width="1.3" fill="none" marker-end="url(#ar)"/>
+<rect x="448" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="2"/>
 <text x="462" y="234" font-size="14" font-weight="600">STM32 scalar C</text>
-<text x="462" y="258" font-size="13" font-weight="600" fill="#0E7C61">0 mismatches</text>
+<text x="462" y="258" font-size="13" font-weight="600" fill="#2F2AC8">0 mismatches</text>
 <text x="462" y="278" class="cap">24 golden vectors</text>
-<text x="462" y="294" font-size="10.5" fill="#0E7C61" letter-spacing="1.4" font-weight="600">ON SILICON</text>
-<path d="M440,128 V166 H546 V204" stroke="#0E7C61" stroke-width="1.3" fill="none" marker-end="url(#ag)"/>
-<rect x="660" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#0E7C61" stroke-width="2"/>
+<text x="462" y="294" font-size="10.5" style="fill:#2F2AC8">on silicon</text>
+<path d="M440,128 V166 H546 V204" stroke="#2F2AC8" stroke-width="1.3" fill="none" marker-end="url(#ag)"/>
+<rect x="660" y="208" width="196" height="92" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="2"/>
 <text x="674" y="234" font-size="14" font-weight="600">STM32 SMLALD SIMD</text>
-<text x="674" y="258" font-size="13" font-weight="600" fill="#0E7C61">0 mismatches</text>
+<text x="674" y="258" font-size="13" font-weight="600" fill="#2F2AC8">0 mismatches</text>
 <text x="674" y="278" class="cap">24 golden vectors</text>
-<text x="674" y="294" font-size="10.5" fill="#0E7C61" letter-spacing="1.4" font-weight="600">ON SILICON</text>
-<path d="M440,128 V166 H758 V204" stroke="#0E7C61" stroke-width="1.3" fill="none" marker-end="url(#ag)"/>
-<line x1="16" y1="336" x2="864" y2="336" stroke="#E6EBF0"/>
-<text x="20" y="358" class="cap">A controller that looks correct in PyTorch but differs numerically on the target is not validated. Each path re-derives the arithmetic independently:</text>
-<text x="20" y="377" class="cap">the FPGA exporter shares no code with the quantization library and still produces the identical program and the identical per-layer scales.</text>
+<text x="674" y="294" font-size="10.5" style="fill:#2F2AC8">on silicon</text>
+<path d="M440,128 V166 H758 V204" stroke="#2F2AC8" stroke-width="1.3" fill="none" marker-end="url(#ag)"/>
+<line x1="16" y1="336" x2="864" y2="336" stroke="#D8D8D8"/>
+<text x="20" y="358" class="cap">A controller correct in PyTorch but different on the target has not been validated. Each path re-derives the arithmetic on its own:</text>
+<text x="20" y="377" class="cap">the FPGA exporter shares no code with the quantization library, yet derives the same program and the same per-layer scales.</text>
 </svg>

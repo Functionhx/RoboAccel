@@ -1,21 +1,21 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 372" width="880" height="372" role="img">
 <style>
-  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#101820}
-  .band-title{font-size:13px;fill:#EAEFF4;letter-spacing:2.2px;font-weight:600}
-  .band-mark{font-size:12px;fill:#8A95A1;letter-spacing:1.4px}
-  .stage{font-size:11px;fill:#5C6874;letter-spacing:1.8px;font-weight:600}
+  text{font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;fill:#000000}
+  .band-title{font-size:14px;fill:#FFFFFF;font-weight:600}
+  .band-mark{font-size:12px;fill:#9A9A9A}
+  .stage{font-size:12px;fill:#8C8C8C;font-weight:600}
   .h{font-size:15px;font-weight:600}
-  .p{font-size:13px;fill:#5C6874}
+  .p{font-size:13px;fill:#8C8C8C}
   .n{font-size:13px;font-weight:600}
-  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2A6DB0}
-  .cap{font-size:12px;fill:#5C6874}
-  .ax{font-size:12px;fill:#5C6874}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .cap{font-size:12px;fill:#8C8C8C}
+  .ax{font-size:12px;fill:#8C8C8C}
 </style>
 <rect width="880" height="372" fill="#FFFFFF"/>
-<rect x="0.5" y="0.5" width="879" height="371" fill="none" stroke="#DFE5EB"/>
-<rect x="1" y="1" width="878" height="42" fill="#101820"/>
-<text x="20" y="27" class="band-title">CONTROL SUCCESS BY PRECISION · CLOSED-LOOP, SEVEN SEGMENTS</text>
-<text x="860" y="27" class="band-mark" text-anchor="end">RoboAccel</text>
+<rect x="0.5" y="0.5" width="879" height="371" fill="none" stroke="#D8D8D8"/>
+<rect x="1" y="1" width="878" height="42" fill="#000000"/>
+<text x="20" y="27" class="band-title">Figure 4 Closed-loop control success, by precision</text>
+<defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="#FFFFFF"/><line x1="0" y1="0" x2="0" y2="6" stroke="#8C8C8C" stroke-width="1.6"/></pattern></defs>
 <text x="219.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 219.0 84)">forward</text>
 <text x="301.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 301.0 84)">reverse</text>
 <text x="383.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 383.0 84)">turn_left</text>
@@ -25,89 +25,89 @@
 <text x="711.0" y="84" class="ax" text-anchor="middle" transform="rotate(-26 711.0 84)">combined</text>
 <text x="788" y="84" class="ax" text-anchor="middle" font-weight="600">mean</text>
 <text x="164" y="120" font-size="14" text-anchor="end">FP32</text>
-<rect x="178" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="216.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="260" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="298.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="342" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="380.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="424" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="462.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="506" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="544.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="588" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="626.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="670" y="96" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="708.5" y="117" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<text x="788" y="117" font-size="13.5" font-weight="700" text-anchor="middle">1.000</text>
+<rect x="178" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="216.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="260" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="298.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="342" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="380.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="424" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="462.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="506" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="544.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="588" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="626.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="670" y="96" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="708.5" y="117" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<text x="788" y="117" font-size="13.5" font-weight="700" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
 <text x="164" y="158" font-size="14" text-anchor="end" font-weight="700">W16A16</text>
-<text x="164" y="171" font-size="10.5" fill="#2A6DB0" text-anchor="end" letter-spacing="1.2" font-weight="600">DEPLOYED</text>
-<rect x="178" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="216.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="260" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="298.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="342" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="380.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="424" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="462.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="506" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="544.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="588" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="626.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="670" y="134" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="708.5" y="155" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<text x="788" y="155" font-size="13.5" font-weight="700" text-anchor="middle">1.000</text>
+<text x="164" y="171" font-size="11" style="fill:#2F2AC8" text-anchor="end">deployed</text>
+<rect x="178" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="216.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="260" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="298.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="342" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="380.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="424" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="462.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="506" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="544.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="588" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="626.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="670" y="134" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="708.5" y="155" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<text x="788" y="155" font-size="13.5" font-weight="700" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
 <text x="164" y="196" font-size="14" text-anchor="end">W8A16</text>
-<rect x="178" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="216.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="260" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="298.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="342" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="380.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="424" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="462.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="506" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="544.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="588" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="626.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<rect x="670" y="172" width="77" height="31" fill="rgb(42,109,176)" stroke="#E6EBF0"/>
-<text x="708.5" y="193" font-size="13" font-weight="600" fill="#FFFFFF" text-anchor="middle">1.000</text>
-<text x="788" y="193" font-size="13.5" font-weight="700" text-anchor="middle">1.000</text>
+<rect x="178" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="216.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="260" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="298.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="342" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="380.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="424" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="462.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="506" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="544.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="588" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="626.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<rect x="670" y="172" width="77" height="31" fill="#000000" stroke="#000000" stroke-width="0.8"/>
+<text x="708.5" y="193" font-size="13" font-weight="600" style="fill:#FFFFFF" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
+<text x="788" y="193" font-size="13.5" font-weight="700" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">1.000</text>
 <text x="164" y="234" font-size="14" text-anchor="end">W8A8</text>
-<rect x="178" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="216.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="260" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="298.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="342" y="210" width="77" height="31" fill="rgb(220,231,242)" stroke="#E6EBF0"/>
-<text x="380.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.164</text>
-<rect x="424" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="462.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="506" y="210" width="77" height="31" fill="rgb(243,247,250)" stroke="#E6EBF0"/>
-<text x="544.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.055</text>
-<rect x="588" y="210" width="77" height="31" fill="rgb(240,244,249)" stroke="#E6EBF0"/>
-<text x="626.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.070</text>
-<rect x="670" y="210" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="708.5" y="231" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<text x="788" y="231" font-size="13.5" font-weight="700" text-anchor="middle">0.041</text>
+<rect x="178" y="210" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="216.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="260" y="210" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="298.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="342" y="210" width="77" height="31" fill="rgb(213,213,213)" stroke="#000000" stroke-width="0.8"/>
+<text x="380.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.164</text>
+<rect x="424" y="210" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="462.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="506" y="210" width="77" height="31" fill="rgb(241,241,241)" stroke="#000000" stroke-width="0.8"/>
+<text x="544.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.055</text>
+<rect x="588" y="210" width="77" height="31" fill="rgb(237,237,237)" stroke="#000000" stroke-width="0.8"/>
+<text x="626.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.070</text>
+<rect x="670" y="210" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="708.5" y="231" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<text x="788" y="231" font-size="13.5" font-weight="700" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.041</text>
 <text x="164" y="272" font-size="14" text-anchor="end">W4A8</text>
-<rect x="178" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="216.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="260" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="298.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="342" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="380.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="424" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="462.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="506" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="544.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="588" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="626.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<rect x="670" y="248" width="77" height="31" fill="rgb(255,255,255)" stroke="#E6EBF0"/>
-<text x="708.5" y="269" font-size="13" font-weight="600" fill="#101820" text-anchor="middle">0.000</text>
-<text x="788" y="269" font-size="13.5" font-weight="700" text-anchor="middle">0.000</text>
-<line x1="168" y1="206" x2="820" y2="206" stroke="#C1440E" stroke-width="2"/>
-<text x="162" y="200" class="ax" fill="#C1440E" text-anchor="end" font-weight="600">cliff</text>
-<line x1="16" y1="308" x2="864" y2="308" stroke="#E6EBF0"/>
+<rect x="178" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="216.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="260" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="298.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="342" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="380.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="424" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="462.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="506" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="544.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="588" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="626.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<rect x="670" y="248" width="77" height="31" fill="url(#hatch)" stroke="#000000" stroke-width="0.8"/>
+<text x="708.5" y="269" font-size="13" font-weight="600" style="fill:#000000" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<text x="788" y="269" font-size="13.5" font-weight="700" text-anchor="middle" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace">0.000</text>
+<line x1="168" y1="206" x2="822" y2="206" style="stroke:#2F2AC8" stroke-width="2"/>
+<text x="828" y="210" class="ax" style="fill:#2F2AC8" text-anchor="start" font-weight="600">cliff</text>
+<line x1="16" y1="308" x2="864" y2="308" stroke="#D8D8D8"/>
 <text x="20" y="330" font-size="13"><tspan font-weight="600">The cliff is at 8-bit activations, not 8-bit weights.</tspan> W8A16 is indistinguishable from FP32; W8A8 collapses.</text>
 <text x="20" y="350" class="cap">One training seed, seven command segments, closed-loop in simulation. Source: docs/results/ladder_pooled.json</text>
 </svg>
