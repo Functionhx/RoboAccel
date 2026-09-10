@@ -118,7 +118,7 @@ Kept here on purpose. See the README's *"What this project got wrong"*.
 |---|---|
 | "QAT beats FP32" (MSE 0.1334 vs 0.2898) | The gain was extra training, not quantization awareness. Control metrics reached 0.0657. **Numerical MSE is not evidence of control quality.** |
 | "QAT is worse than PTQ at mass +2" | Built on `peak_roll_rad`, a max over 768 episodes that swings 75 points across seeds |
-| "Ship at W8A16" | The exporter is INT16/Q8.8 by construction and **cannot emit INT8 weights**. Not executable without a bit-width parameter in the export path |
+| "Ship at W8A16" | The exporter is INT16/Q8.8 by construction and **cannot emit INT8 weights**. Not executable without a bit-width parameter in the export path. **A deeper blocker was found in goal 6:** `export_policy.py` has no per-layer activation format at all — `ACT_FRAC = 8` is a module constant and the GEMM shift is emitted as `weight_frac`, which is correct only when `f_in == f_out`. **No calibrated activation configuration has ever been exportable**, so every W8A8 and W8A16 control number in this repository is a simulation result. `goal6_root_cause.md` §12 |
 | "The latent bottleneck causes the W8A8 collapse" | `enc2` contributes 13.2% of the error |
 | "Saturation causes the W8A8 collapse" | Measured clipping is 0.0000% |
 | "Rounding bias causes the turning failure" | Ideal round-half-away-from-zero leaves turning at 0.000 |

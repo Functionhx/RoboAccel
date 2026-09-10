@@ -1071,3 +1071,104 @@ silently would invalidate every published number in this repository. The
 recommendation belongs in the documentation and in the export recipe, not in a
 flag flip.
 
+
+---
+
+## 12. Can any of this actually be deployed?
+
+§11 recommends a calibration. Before that recommendation means anything, the
+export path has to be able to express it. It cannot — and the reason is not the
+one already recorded in `EVIDENCE.md`.
+
+### 12.1 The exporter has no per-layer activation format
+
+`fpga/tools/export_policy.py` defines `ACT_FRAC = 8` as a module constant and
+uses it for every activation and every bias. Every tensor is Q8.8, so `f_in`
+always equals `f_out`, and the GEMM descriptor is emitted as
+
+```python
+"shift": weight_frac
+```
+
+which is the correct value **only** under that assumption. The integer
+reference, which is what the RTL and both Cortex-M7 kernels are verified
+against, computes
+
+```python
+shift = f_in + f_w - f_out
+```
+
+Comparing the two for the two calibrations in question:
+
+| layer | shipped Q8.8 shift needed | p99.5 shift needed | exporter emits |
+|---|---:|---:|---:|
+| enc0 | **6** | 5 | 5 |
+| enc1 | 8 | 8 | 8 |
+| enc2 | **8** | 9 | 9 |
+| act0 | **5** | **5** | 6 |
+| act1 | 7 | 7 | 7 |
+| act2 | **9** | **9** | 8 |
+| act3 | 8 | 8 | 8 |
+
+The shipped W8A8 calibration needs **four of seven** shifts the exporter would
+get wrong; p99.5 needs **two**. So this is not a limitation introduced by the
+new calibration — **no calibrated activation configuration has ever been
+exportable**, including the W8A8 and W8A16 rows this repository has published
+since goal 4. Every one of them is a simulation result.
+
+`EVIDENCE.md` records "cannot emit INT8 weights" as the blocker on shipping
+W8A16. That is true and it is not the binding one. The binding one is that the
+exporter cannot emit a per-layer activation format at all.
+
+### 12.2 The hardware can express it; the toolchain cannot
+
+Every shift required by either calibration is a small non-negative integer, and
+the descriptor's shift field is 6-bit unsigned — range 0 to 63. Nothing about
+these configurations is outside what the RTL already accepts.
+
+The one genuine obstacle is ELU. `rl_elu_engine.sv` and `rl_elu_array8.sv` take
+no shift input: the SFU ROM is addressed in Q8.8 and cannot be moved. An
+activation on any other grid has to be converted into Q8.8 before the ELU and
+back afterwards.
+
+The ISA already has the instruction for that. `rl_vector_engine.sv` implements
+
+```
+AFFINE   dst = sat((src * a + b) >> shift)
+```
+
+which converts in either direction: a right shift for `f > 8`, or `a = 2^(8-f)`
+for `f < 8`. Two AFFINE descriptors around each of the five ELUs takes the
+program from 13 descriptors to **23**, against an instruction RAM depth of
+**32**. It fits.
+
+**So this is a toolchain limit, not a hardware limit** — the same verdict this
+project already reached for element-wise ADD, arrived at independently.
+
+### 12.3 What it would cost
+
+*Estimated, not measured.* The vector engine processes one lane per cycle by
+deliberate design, so an AFFINE over `N` elements costs about `N` cycles. The
+five ELU sites carry 128, 64, 128, 64 and 32 elements, so ten conversions add
+roughly `2 × 416 = 832` cycles.
+
+| | cycles | at 100 MHz | share of the 10 ms control period |
+|---|---:|---:|---:|
+| today, Q8.8 only | 1,799 | 17.99 µs | 0.18% |
+| estimated, per-layer fracs | ~2,631 | ~26.3 µs | ~0.26% |
+
+A 46% increase in inference latency, on a budget where the current design uses
+under a fifth of one percent. That is not the constraint.
+
+### 12.4 What would have to change
+
+1. Thread `act_fracs` through `export_policy.py`; emit `f_in + f_w - f_out`.
+2. Quantize each bias at its layer's `f_out` rather than at `ACT_FRAC`.
+3. Emit AFFINE pairs around each ELU when `f_out != 8`.
+4. Re-run the full chain required by `docs/07_verification_guide.md`: re-export,
+   Python golden, and the policy testbench, since this changes the descriptor
+   program.
+
+None of this is implemented or tested here. It is scoped, not done — and the
+sizing above is arithmetic from the RTL, not a measurement.
+
