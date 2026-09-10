@@ -1199,8 +1199,8 @@ ELU: `enc2` is the latent and goes to CONCAT, `act3` is the output. Everything
 that *does* feed an ELU still has to stay at Q8.8 until step 3 emits the AFFINE
 pairs, so this is the exportable subset, not the full capability.
 
-**Step 3 (AFFINE pairs around the ELUs) is still not done**, and without it no
-INT8-activation calibration is exportable. What has changed is that the
+**Step 3 (AFFINE pairs around the ELUs) is not done, and §14 withdraws it** —
+measured, it would make the numerical error worse rather than better. What has changed is that the
 exporter is no longer *structurally* limited to one global format, and the
 hardware has now been shown to execute a per-layer program correctly rather
 than only argued to be capable of it.
@@ -1278,5 +1278,79 @@ It has not run on hardware. `tb_policy_e2e` is an Icarus simulation of the RTL
 against the exported golden, which is the same standard every other RTL claim in
 this repository meets — and no more than that.
 
-The three tensors that remain at Q8.8 are the ones feeding ELUs. Freeing them
-still needs the AFFINE pairs of §12.2, which are still not implemented.
+The five tensors that remain at Q8.8 are the ones feeding ELUs. §14 measures
+what freeing them would buy: nothing. The SFU ROM is addressed in Q8.8, so a
+finer grid upstream is round-tripped away before the ELU sees it.
+
+---
+
+## 14. Step 3 is not worth building, and the measurement says so
+
+§12.4 listed emitting `AFFINE` conversion pairs around the ELUs as the work
+remaining to make per-layer activation formats fully available, and §13.2
+described the shipped ELU-free calibration as a partial result waiting on it.
+Both were wrong, and cheaply so: the prize was measured before the work was
+paid for.
+
+### 14.1 The prize is negative
+
+Action-mean error against the FP32 policy, INT16 datapath, 4,000 real
+observations:
+
+| configuration | fracs `[enc0 enc1 enc2 act0 act1 act2 act3 obs]` | MAE | max |
+|---|---|---:|---:|
+| flat Q8.8, shipped | `8 8 8 8 8 8 8 8` | 0.010127 | 0.053755 |
+| **ELU-free only, §13** | `8 8 11 8 8 8 11 11` | **0.006404** | **0.030188** |
+| all layers, needs AFFINE | `10 10 11 12 12 11 11 11` | 0.006577 | 0.048027 |
+
+Giving *every* tensor its widest representable scale is **worse on both
+metrics** than giving it to only the three that do not feed an ELU. Ten extra
+descriptors and roughly 832 extra cycles would buy a regression.
+
+### 14.2 Why: the ELU ROM is the binding resolution
+
+Each ELU-feeding tensor, moved to its widest scale on its own, with everything
+else left at Q8.8:
+
+| tensor | frac | MAE | against flat |
+|---|---:|---:|---|
+| flat Q8.8 | 8 | 0.010127 | — |
+| enc0 | 10 | 0.010196 | worse |
+| enc1 | 10 | 0.010174 | worse |
+| act0 | 12 | 0.009611 | 5% better |
+| act1 | 12 | 0.010139 | unchanged |
+| act2 | 11 | 0.010501 | worse |
+
+Not one of them is worth having, and three make things worse. The three
+ELU-free tensors together are worth 37%.
+
+The reason is the SFU ROM. It is addressed in Q8.8 and cannot be moved, so a
+value on any finer grid is converted down to Q8.8 for the ELU and back
+afterwards — exactly what the `AFFINE` pairs would do in hardware, and what
+`_elu_in_format` already does in the reference this table was computed with.
+The round trip discards everything the finer scale bought and adds its own
+rounding on the way through. **An ELU's 1/256 step is the effective resolution
+of every tensor that passes through it, whatever grid that tensor is stored
+on.**
+
+So the ELU-free subset is not a partial answer waiting on step 3. It is the
+whole available gain, and the boundary it stops at is a real one.
+
+### 14.3 What this changes
+
+* **Step 3 is withdrawn.** The `AFFINE` pairs are implementable — the sequencer
+  decodes `cmd_subop` from descriptor bits 63:58, `RL_OP_VECTOR` and
+  `RL_VEC_AFFINE` are live in the RTL, and the program fits in 23 of 32
+  descriptors. They are simply not worth emitting.
+* **§12.2's "toolchain limit, not a hardware limit" needs qualifying.** The
+  *shift* path was a toolchain limit and is now closed. The remaining limit is
+  hardware: the ELU ROM's fixed Q8.8 addressing. Moving it needs a wider or
+  re-addressable SFU table, not exporter work.
+* **The recommendation in §13.1 stands unchanged**, and is now known to be the
+  best available rather than a first instalment.
+
+This is the second time in this study that a plausible, well-argued next step
+turned out to be worth measuring before building — the first was the latent
+rescaling of §5.6. Both cost minutes to falsify and would have cost days to
+implement.
+
