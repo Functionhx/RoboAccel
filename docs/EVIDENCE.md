@@ -88,7 +88,11 @@ seed-stable statistic and is the one used.
 | R6 | One 1e-5 weight step produces policy KL **6.73e-02** under W8A8 fake-quant vs **4.06e-07** in float — **165,737×** | **measured** | `docs/results/kl_amplification_qat.json`; reproduced on a second checkpoint (`kl_amplification_fp32.json`) |
 | R7 | W8A8 is the only precision on the ladder whose quantization KL floor exceeds the controller threshold, and the only one where QAT fails | **measured** | R6 table vs C1–C3 |
 | R8 | Raising the yaw reward 2× and 4× changes `yaw_rmse` by 0.8%, i.e. not at all | **measured** | `docs/results/goal4_results.json`; reward contribution verified to scale exactly 2.00×/4.00× |
-| R9 | "Preserve a reference policy, learn only the correction" would avoid this | **hypothesis** | labelled as a hypothesis; untested |
+| R9 | "Preserve a reference policy, learn only the correction" would avoid this | **falsified** | Tested in `goal6_root_cause.md` §4: an FP32 teacher at beta=1.0, contributing 5,678× the entropy gradient, left turning at 0.000 and scored 0.155 against the control's 0.206 |
+| R13 | W8A8 PTQ scores **1.000** on all seven segments under 99.5th-percentile activation scales, against **0.041** under the shipped peak-based scales | **measured** | Same weights, same checkpoint `ab20c190…`, same evaluator; `docs/results/ladder_w8a8_p99.5.json` vs `ladder_pooled.json` |
+| R14 | The gain holds across **three independently trained policies**: 0.285 → 0.906 mean | **measured** | `goal6_root_cause.md` §5.8.2. Evaluation seeds are inert for this evaluator (bit-identical summaries), so variation is across training runs |
+| R15 | W8A8's representational floor is **0.3167** KL against W8A16's **0.0096**, with RL removed entirely | **measured** | 24,000-step supervised distillation, held-out split, flat from step 2,880; `quantization/scripts/goal6_capacity_probe.py` |
+| R16 | Freezing the encoder bit-identically for 2000 iterations leaves turning at **0.000** and the learning-rate floor at **100%** | **measured** | `goal6_root_cause.md` §3; SHA-256 equal at iterations 0 and 2000 |
 
 **R7 is the strongest claim in the README and deserves its caveat**: it is a
 correspondence across five precisions on one model and one task. It predicts
@@ -119,6 +123,9 @@ Kept here on purpose. See the README's *"What this project got wrong"*.
 | "Saturation causes the W8A8 collapse" | Measured clipping is 0.0000% |
 | "Rounding bias causes the turning failure" | Ideal round-half-away-from-zero leaves turning at 0.000 |
 | "The PL has no element-wise ADD" | False on ISA v3: `OP_AFFINE` with a=1, shift=0 **is** ADD. Still true through the current exporter |
+| "The learning-rate collapse causes the W8A8 QAT failure" | The collapse is real and pins the rate for 2000/2000 iterations. Holding the rate fixed restored no turning and lowered mean success 0.501 → 0.206. A co-symptom, not the cause. `goal5_mechanism_confirmation.md` |
+| "Encoder drift causes the W8A8 QAT failure" | The encoder was frozen bit-identically for 2000 iterations (‖Δ‖ = 0.00, SHA-256 equal at iterations 0 and 2000). Turning stayed at exactly 0.000, and the learning-rate collapse was unaffected. `goal6_root_cause.md` §3 |
+| **"The precision cliff is at 8-bit activations"** | **The cliff is at 4-bit weights.** W8A8 scores 0.041 under peak-based activation scales and **1.000** under 99.5th-percentile scales — same arithmetic, same weights, same checkpoint, same evaluator. The published collapse measured a calibration heuristic. `goal6_root_cause.md` §5.7, §11 |
 
 ---
 

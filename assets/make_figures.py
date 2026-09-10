@@ -430,13 +430,16 @@ SEGMENTS = ["forward", "reverse", "turn_left", "turn_right",
 
 def precision_cliff() -> str:
     d = json.loads((RESULTS / "ladder_pooled.json").read_text())
-    order = ["FP32", "W16A16", "W8A16", "W8A8", "W4A8"]
+    # "W8A8 p99.5" is the same arithmetic as W8A8 with a different activation
+    # calibration. It sits next to W8A8 because the contrast between those two
+    # rows is the point: the collapse is the calibration, not the precision.
+    order = ["FP32", "W16A16", "W8A16", "W8A8", "W8A8 p99.5", "W4A8"]
     rows = [(k, [d[k][s]["success"] for s in SEGMENTS if s in d[k]])
             for k in order if k in d]
 
-    w, h = 880, 372
+    w, h = 880, 410
     x0, y0, cw, ch = 178, 96, 82, 38
-    o = frame(w, h, "Closed-loop control success, by precision", fig=4)
+    o = frame(w, h, "Closed-loop control success, by precision and calibration", fig=4)
     o.append(hatchdefs())
 
     for j, s in enumerate(SEGMENTS):
@@ -480,22 +483,16 @@ def precision_cliff() -> str:
                  f'font-weight="700" text-anchor="middle" '
                  f'font-family="{MONO}">{m:.3f}</text>\n')
 
-    yc = y0 + 3 * ch - 4
-    o.append(f'<line x1="{x0-10}" y1="{yc}" x2="{x0+7*cw+70}" y2="{yc}" '
-             f'style="stroke:{PLOT}" stroke-width="2"/>\n')
-    # Sits to the RIGHT of the rule: at the left it lands on the W8A16 row
-    # label, and an annotation that collides with the data it annotates is
-    # worse than no annotation.
-    o.append(f'<text x="{x0+7*cw+76}" y="{yc+4}" class="ax" '
-             f'style="fill:{PLOT}" text-anchor="start" '
-             f'font-weight="600">cliff</text>\n')
+    # No dividing rule any more. The rows are no longer monotone in precision:
+    # W8A8 fails, the same arithmetic under p99.5 passes, and W4A8 fails below
+    # it. A single "cliff" line would assert a boundary the data stopped
+    # supporting, so the contrast between the two W8A8 rows carries the figure.
+
 
     o.append(f'<line x1="16" y1="{h-64}" x2="{w-16}" y2="{h-64}" '
              f'stroke="{RULE}"/>\n')
     o.append(f'<text x="20" y="{h-42}" font-size="13">'
-             f'<tspan font-weight="600">The cliff is at 8-bit activations, not '
-             f'8-bit weights.</tspan> W8A16 is indistinguishable from FP32; '
-             f'W8A8 collapses.</text>\n')
+             f'<tspan font-weight="600">The W8A8 collapse is the calibration, not the precision.</tspan> Same arithmetic, percentile-clipped scales.</text>\n')
     o.append(f'<text x="20" y="{h-22}" class="cap">One training seed, seven '
              f'command segments, closed-loop in simulation. '
              f'Source: docs/results/ladder_pooled.json</text>\n')
