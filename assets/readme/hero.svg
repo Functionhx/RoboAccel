@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="360" viewBox="0 0 1120 360" role="img" aria-labelledby="title desc">
+  <title id="title">From policy to silicon</title>
+  <desc id="desc">A neural network connects to an integer compute array and a wheel-legged robot. Conceptual illustration of RoboAccel's deployment pipeline.</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#122a35"/>
+      <stop offset="1" stop-color="#091820"/>
+    </linearGradient>
+    <linearGradient id="chip" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#254a53"/>
+      <stop offset="1" stop-color="#142f3a"/>
+    </linearGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <path d="M28 0H0V28" fill="none" stroke="#b5ded6" stroke-opacity=".06"/>
+    </pattern>
+    <pattern id="array" width="14" height="14" patternUnits="userSpaceOnUse" x="757" y="116">
+      <rect width="8" height="8" x="3" y="3" rx="2" fill="#7ee2c6" fill-opacity=".8"/>
+    </pattern>
+  </defs>
+  <rect width="1120" height="360" rx="20" fill="url(#background)"/>
+  <rect width="1120" height="360" rx="20" fill="url(#grid)"/>
+  <path d="M0 340H1120" stroke="#7ee2c6" stroke-opacity=".12"/>
+  <path d="M52 58h28" stroke="#7ee2c6" stroke-width="4" stroke-linecap="round"/>
+  <text x="94" y="64" fill="#a9c9cb" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" letter-spacing="3">ROBOT LEARNING / EMBEDDED COMPUTE</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="64" letter-spacing="-2">
+    <text x="50" y="151" fill="#f2f8f7">From policy</text>
+    <text x="50" y="221" fill="#7ee2c6">to silicon.</text>
+  </g>
+  <text x="53" y="275" fill="#bdd0d2" font-family="Arial, Helvetica, sans-serif" font-size="22">Two targets. The same integer arithmetic.</text>
+
+  <!-- Policy: three layers, connected to the compute array. -->
+  <g fill="none" stroke="#7ee2c6" stroke-opacity=".3" stroke-width="1.5">
+    <path d="M574 129L624 104 674 150M574 129L624 150 674 196M574 129L624 196 674 150M574 129L624 242 674 196"/>
+    <path d="M574 173L624 104 674 196M574 173L624 150 674 150M574 173L624 196 674 196M574 173L624 242 674 150"/>
+    <path d="M574 217L624 104M574 217L624 150M574 217L624 196M574 217L624 242"/>
+  </g>
+  <g fill="#172f39" stroke="#7ee2c6" stroke-width="2.5">
+    <circle cx="574" cy="129" r="7"/><circle cx="574" cy="173" r="7"/><circle cx="574" cy="217" r="7"/>
+    <circle cx="624" cy="104" r="7"/><circle cx="624" cy="150" r="7"/><circle cx="624" cy="196" r="7"/><circle cx="624" cy="242" r="7"/>
+    <circle cx="674" cy="150" r="7"/><circle cx="674" cy="196" r="7"/>
+  </g>
+  <g fill="none" stroke="#7ee2c6" stroke-width="2">
+    <path d="M681 150h20v23h32M681 196h20v-23"/>
+    <path d="M718 168l7 5-7 5"/>
+  </g>
+
+  <!-- Integer compute: 8 by 8 processing elements. -->
+  <g stroke="#47717a" stroke-width="3">
+    <path d="M757 104V90m16 14V90m16 14V90m16 14V90m16 14V90m16 14V90m16 14V90m16 14V90"/>
+    <path d="M757 244v14m16-14v14m16-14v14m16-14v14m16-14v14m16-14v14m16-14v14m16-14v14"/>
+    <path d="M743 120h-14m14 18h-14m14 18h-14m14 18h-14m14 18h-14m14 18h-14m14 18h-14"/>
+    <path d="M883 120h14m-14 18h14m-14 18h14m-14 18h14m-14 18h14m-14 18h14m-14 18h14"/>
+  </g>
+  <rect x="743" y="104" width="140" height="140" rx="14" fill="url(#chip)" stroke="#7ee2c6" stroke-width="2"/>
+  <rect x="757" y="116" width="112" height="112" fill="url(#array)"/>
+  <circle cx="755" cy="233" r="3" fill="#ffb86b"/>
+
+  <!-- Action path and a schematic wheel-legged robot. -->
+  <path d="M897 174h33" fill="none" stroke="#ffb86b" stroke-width="2"/>
+  <path d="M922 169l7 5-7 5" fill="none" stroke="#ffb86b" stroke-width="2"/>
+  <g stroke="#ffb86b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="974" y="123" width="55" height="55" rx="10" fill="#302c29"/>
+    <path d="M1002 123v-14m-9 0h18M980 178l-20 22 16 27m46-49 21 22-17 27" fill="none"/>
+    <circle cx="975" cy="238" r="17" fill="#17262e"/>
+    <circle cx="1027" cy="238" r="17" fill="#17262e"/>
+    <circle cx="975" cy="238" r="5" fill="#ffb86b" stroke="none"/>
+    <circle cx="1027" cy="238" r="5" fill="#ffb86b" stroke="none"/>
+    <path d="M987 147h7m15 0h7"/>
+  </g>
+  <path d="M942 263h117" stroke="#a9c9cb" stroke-opacity=".25"/>
+  <g fill="#a9c9cb" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700" letter-spacing="2" text-anchor="middle">
+    <text x="624" y="298">POLICY</text>
+    <text x="813" y="298">COMPUTE</text>
+    <text x="1001" y="298">CONTROL</text>
+  </g>
+</svg>
