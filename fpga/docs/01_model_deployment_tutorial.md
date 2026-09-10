@@ -277,7 +277,7 @@ $map.output
 $map.vector_words_used
 $map.weight_words_per_bank
 $map.instruction_count
-$map.random_standard_normal_input_metrics
+$map.accuracy_metrics
 $map.descriptors | Format-Table opcode,src_base,dst_base,aux0_base,weight_base,dim_k,dim_n,shift,node
 ```
 

@@ -1214,3 +1214,69 @@ grid's 0.0065 — better on average — while maximum error rises from 0.039 to
 Choosing a deployable INT16 calibration needs the self-test to use real
 observations first. That is a fourth step, and it is not done either.
 
+
+---
+
+## 13. A deployable improvement to the shipped configuration
+
+§12.5 noted that the exporter's accuracy self-test drives the network with
+`rng.normal(0, 1)` rather than real observations, and that this made a
+calibration impossible to judge. `--calib-obs` now points it at an `.npz` of
+real on-policy observations, and the manifest key stopped asserting a
+distribution it no longer controls: `random_standard_normal_input_metrics`
+became `accuracy_metrics`, carrying an `input_distribution` field that says
+which probe produced the numbers.
+
+That changes the answer completely.
+
+| activation scales | probe | MAE | max error | RMSE |
+|---|---|---:|---:|---:|
+| flat Q8.8 (shipped) | standard normal | 0.006895 | 2.265 | 0.028674 |
+| flat Q8.8 (shipped) | **real observations** | 0.007178 | 0.069295 | 0.009704 |
+| per-layer, ELU-free | standard normal | 0.006263 | **11.870** | 0.130825 |
+| per-layer, ELU-free | **real observations** | **0.003190** | **0.022006** | **0.004203** |
+
+The synthetic probe was not merely uninformative, it was **inverted**. It
+reports the per-layer calibration as five times worse on maximum error; on the
+distribution the network actually sees, that calibration is **3.1× better** on
+maximum error, 2.25× better on mean error and 2.3× better on RMSE — better on
+every metric. A calibration that is uniformly superior in reality would have
+been rejected by this repository's own export self-test.
+
+Note also that the synthetic probe overstates error for *both* configurations
+(flat: max 2.265 synthetic against 0.069 real) and penalises the tighter one
+much harder. Off-distribution probes do not merely add noise; they bias against
+exactly the calibrations worth having.
+
+### 13.1 What is now deployable
+
+The configuration below needs **no RTL change, no new operator, and no
+retraining**, and it applies to the *shipped* W16A16 datapath rather than to a
+simulation-only precision:
+
+```json
+{"enc0": 8, "enc1": 8, "enc2": 11, "act0": 8, "act1": 8, "act2": 8,
+ "act3": 11, "obs": 11}
+```
+
+`enc2` is the latent and feeds CONCAT; `act3` is the output. Neither feeds an
+ELU, so neither needs the Q8.8 SFU ROM, and the remaining five tensors stay at
+8. Exported with `--act-fracs`, it emits shifts `[14, 12, 11, 16, 14, 14, 11]`
+and **`tb_policy_e2e` passes at 1,799 cycles** — the same cycle count, because
+nothing was added to the program.
+
+Published as `docs/results/act_fracs_int16_elu_free.json`.
+
+### 13.2 What it is not
+
+It is a **numerical** improvement, and closed-loop control at W16A16 already
+scores 1.000, so there is no control headroom for it to recover. Its value is a
+smaller arithmetic gap between the FP32 policy and the deployed integer program,
+which matters for margin rather than for any metric currently short of ceiling.
+
+It has not run on hardware. `tb_policy_e2e` is an Icarus simulation of the RTL
+against the exported golden, which is the same standard every other RTL claim in
+this repository meets — and no more than that.
+
+The three tensors that remain at Q8.8 are the ones feeding ELUs. Freeing them
+still needs the AFFINE pairs of §12.2, which are still not implemented.

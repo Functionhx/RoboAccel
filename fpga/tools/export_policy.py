@@ -423,15 +423,52 @@ def make_test_inputs(policy: dict[str, Any], variant: int = 0) -> dict[str, np.n
     return result
 
 
+def load_observation_samples(path: Path | None, policy: dict[str, Any],
+                             samples: int, seed: int
+                             ) -> list[dict[str, np.ndarray]] | None:
+    """Real on-policy observations for the accuracy self-test, if supplied.
+
+    The synthetic fallback draws every input from N(0, 1), which is neither the
+    distribution the network sees nor the one a calibration is measured on.
+    Activation peaks differ between the two, so a calibration tuned on real
+    rollouts can look saturated here purely because the probe is
+    off-distribution -- observed on this model as a maximum error of 1.307
+    against 0.039, while the mean error improved.
+
+    The file is an .npz with one array per policy input, shaped (N, count), as
+    written by training/scripts/dump_calib_obs.py.
+    """
+    if path is None:
+        return None
+    data = np.load(path)
+    missing = [i["name"] for i in policy["inputs"] if i["name"] not in data]
+    if missing:
+        raise ValueError(f"{path} has no array for policy input(s) {missing}; "
+                         f"it holds {list(data.files)}")
+    for item in policy["inputs"]:
+        got = int(data[item["name"]].shape[1])
+        if got != item["count"]:
+            raise ValueError(f"{item['name']} is {got} wide, policy expects "
+                             f"{item['count']}")
+    total = int(min(data[i["name"]].shape[0] for i in policy["inputs"]))
+    rng = np.random.default_rng(seed)
+    pick = rng.choice(total, size=int(min(samples, total)), replace=False)
+    return [{i["name"]: np.asarray(data[i["name"]][k], dtype=np.float64)
+             for i in policy["inputs"]} for k in pick]
+
+
 def evaluate(policy: dict[str, Any], images: dict[str, Any], samples: int,
              seed: int) -> dict[str, float | int]:
     rng = np.random.default_rng(seed)
     errors = []
     fixed_outputs = []
     float_outputs = []
-    for _ in range(samples):
-        floating_inputs = {item["name"]: rng.normal(0.0, 1.0, item["count"])
-                           for item in policy["inputs"]}
+    real = images.get("observation_samples")
+    count = len(real) if real is not None else samples
+    for index in range(count):
+        floating_inputs = (real[index] if real is not None else
+                           {item["name"]: rng.normal(0.0, 1.0, item["count"])
+                            for item in policy["inputs"]})
         fixed_inputs = {name: quantize(value, images["obs_frac"])
                         for name, value in floating_inputs.items()}
         floating = float_inference(policy, floating_inputs)
@@ -443,7 +480,10 @@ def evaluate(policy: dict[str, Any], images: dict[str, Any], samples: int,
     errors_array = np.asarray(errors)
     fixed_array = np.asarray(fixed_outputs)
     float_array = np.asarray(float_outputs)
-    return {"samples": samples, "mean_absolute_error": float(errors_array.mean()),
+    return {"samples": count,
+            "input_distribution": ("on-policy observations" if real is not None
+                                   else "standard normal"),
+            "mean_absolute_error": float(errors_array.mean()),
             "max_absolute_error": float(errors_array.max()),
             "rmse": float(np.sqrt(np.mean((fixed_array - float_array) ** 2))),
             "argmax_agreement": float(np.mean(
@@ -535,10 +575,12 @@ extern const int16_t rl_policy_selftest_actions[RL_POLICY_ACTIONS];
 
 def export_policy(model_path: Path, out_path: Path, samples: int, seed: int,
                   c_out: Path | None = None, weight_mode: str = "cache",
-                  act_fracs: dict | None = None
+                  act_fracs: dict | None = None, calib_obs: Path | None = None
                   ) -> tuple[dict[str, Any], dict[str, Any]]:
     policy = load_policy(model_path)
     images = build_images(policy, weight_mode, act_fracs)
+    images["observation_samples"] = load_observation_samples(
+        calib_obs, policy, samples, seed)
     out_path.mkdir(parents=True, exist_ok=True)
     write_hex(out_path / "vector_cache.hex", images["vector_words"], VECTOR_DEPTH)
     instruction_words = [descriptor_word(item) for item in images["descriptors"]]
@@ -598,7 +640,7 @@ def export_policy(model_path: Path, out_path: Path, samples: int, seed: int,
                                     for item in images["descriptors"]],
         "selftest_actions_q8_8": actions_q.astype(int).tolist(),
         "descriptors": images["descriptors"],
-        "random_standard_normal_input_metrics": metrics}
+        "accuracy_metrics": metrics}
     (out_path / "policy_map.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return manifest, {"policy": policy, "images": images,
@@ -612,6 +654,13 @@ def main() -> None:
     parser.add_argument("--samples", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--c-out", type=Path, default=None)
+    parser.add_argument("--calib-obs", type=Path, default=None,
+                        help="an .npz of real observations, one array per "
+                             "policy input, used for the accuracy self-test "
+                             "instead of standard-normal draws. Required to "
+                             "judge a calibration: activation peaks under "
+                             "N(0,1) are not the peaks the calibration was "
+                             "measured on.")
     parser.add_argument("--act-fracs", type=Path, default=None,
                         help="calibrated per-layer activation fractional bits, "
                              "as written by calibrate_act_fracs.py. Without it "
@@ -628,14 +677,15 @@ def main() -> None:
         data = json.loads(args.act_fracs.read_text())
         fracs = data.get("act_fracs", data)
     manifest, _ = export_policy(args.model, args.out, args.samples, args.seed,
-                                args.c_out, args.weight_mode, fracs)
+                                args.c_out, args.weight_mode, fracs,
+                                args.calib_obs)
     print(json.dumps({"model": manifest["model"], "inputs": manifest["inputs"],
                       "output": manifest["output"],
                       "commands": len(manifest["descriptors"]),
                       "vector_words_used": manifest["vector_words_used"],
                       "weight_words_per_bank": manifest["weight_words_per_bank"],
                       "weight_mode": manifest["weight_mode"],
-                      "metrics": manifest["random_standard_normal_input_metrics"]},
+                      "metrics": manifest["accuracy_metrics"]},
                      indent=2, ensure_ascii=False))
 
 

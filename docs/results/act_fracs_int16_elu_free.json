@@ -1,0 +1,3 @@
+{"act_bits": 16, "headroom": 1.25,
+ "note": "Per-layer INT16 fracs for the tensors that do not feed an ELU. enc0/enc1/act0/act1/act2 stay at 8 because the SFU ROM is addressed in Q8.8.",
+ "act_fracs": {"enc0": 8, "enc1": 8, "enc2": 11, "act0": 8, "act1": 8, "act2": 8, "act3": 11, "obs": 11}}
