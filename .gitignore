@@ -12,3 +12,9 @@ logs/
 
 # Icarus Verilog build products
 *.vvp
+
+# Exported cache images and descriptor programs are derived from a checkpoint.
+# They are reproducible with fpga/tools/export_policy.py and are deliberately
+# not committed -- see the README quick start.
+fpga/generated/
+fpga/generated_*/

@@ -209,9 +209,42 @@ def load_policy(path: Path, max_inputs: int = 2) -> dict[str, Any]:
             "value_counts": value_counts}
 
 
-def build_images(policy: dict[str, Any], weight_mode: str = "cache") -> dict[str, Any]:
+# GEMM order in this topology, used to name each layer's output format. The
+# names match roboaccel_quant/fixed_ref.py so one calibration file drives both
+# the reference and the exported program.
+GEMM_NAMES = ["enc0", "enc1", "enc2", "act0", "act1", "act2", "act3"]
+
+
+def resolve_fracs(act_fracs: dict | None) -> tuple[dict, int]:
+    """Per-layer output fracs and the input frac, defaulting to a flat Q8.8.
+
+    With no calibration every tensor sits on the shipped Q8.8 grid, f_in equals
+    f_out at every layer, and every value below collapses to what this exporter
+    emitted before per-layer formats existed.
+    """
+    if not act_fracs:
+        return {n: ACT_FRAC for n in GEMM_NAMES}, ACT_FRAC
+    out = {n: int(act_fracs.get(n, ACT_FRAC)) for n in GEMM_NAMES}
+    obs = int(act_fracs.get("obs", ACT_FRAC))
+    # PL CONCAT moves data without requantizing, so the latent and obs must
+    # already share a grid. fixed_ref.py enforces the same invariant.
+    if out["enc2"] != obs:
+        raise ValueError(
+            f"CONCAT cannot requantize: latent frac {out['enc2']} != obs frac "
+            f"{obs}. Calibrate them onto one grid before exporting.")
+    return out, obs
+
+
+def build_images(policy: dict[str, Any], weight_mode: str = "cache",
+                 act_fracs: dict | None = None) -> dict[str, Any]:
+    out_frac, obs_frac = resolve_fracs(act_fracs)
     vector_words = [0] * VECTOR_DEPTH
     tensor_layout: dict[str, dict[str, int]] = {}
+    # Activation format of every tensor, walked with the graph rather than
+    # indexed by layer position, so the shift stays correct if the topology
+    # changes. ELU preserves its input's format; CONCAT requires both operands
+    # to share one.
+    tensor_frac: dict[str, int] = {}
     cursor = 0
 
     def allocate(name: str, count: int) -> int:
@@ -230,10 +263,11 @@ def build_images(policy: dict[str, Any], weight_mode: str = "cache") -> dict[str
 
     for item in policy["inputs"]:
         allocate(item["name"], item["count"])
+        tensor_frac[item["name"]] = obs_frac
 
     weight_banks: list[list[int]] = [[] for _ in range(LANES)]
     descriptors: list[dict[str, Any]] = []
-    quant_layers: dict[str, tuple[np.ndarray, np.ndarray, int]] = {}
+    quant_layers: dict[str, tuple[np.ndarray, np.ndarray, int]] = {}  # (w, b, shift)
     gemm_index = 0
 
     for node in policy["nodes"]:
@@ -246,9 +280,15 @@ def build_images(policy: dict[str, Any], weight_mode: str = "cache") -> dict[str
             bias_base = allocate(bias_name, output_count)
             weight_frac = choose_weight_frac(node["weight"])
             weight_q = quantize(node["weight"], weight_frac)
-            bias_q = quantize(node["bias"], ACT_FRAC)
+            f_in = tensor_frac[node["inputs"][0]]
+            f_out = out_frac[GEMM_NAMES[gemm_index]]
+            tensor_frac[node["output"]] = f_out
+            # The bias is added AFTER the requantizing shift, so it lives on the
+            # output grid, not on the shipped Q8.8 one.
+            bias_q = quantize(node["bias"], f_out)
             place(bias_base, bias_q)
-            quant_layers[node["output"]] = (weight_q, bias_q, weight_frac)
+            quant_layers[node["output"]] = (weight_q, bias_q,
+                                            f_in + weight_frac - f_out)
 
             layer_base = len(weight_banks[0])
             out_count, in_count = weight_q.shape
@@ -266,12 +306,14 @@ def build_images(policy: dict[str, Any], weight_mode: str = "cache") -> dict[str
                                 "dst_base": output_base, "aux0_base": bias_base,
                                 "aux1_base": 0, "weight_base": layer_base,
                                 "dim_k": in_count, "dim_n": out_count,
-                                "shift": weight_frac, "node": node["name"],
+                                "shift": f_in + weight_frac - f_out,
+                                "node": node["name"],
                                 "weight_stream": False, "weight_word": layer_base})
             gemm_index += 1
         elif op == "ELU":
             source = tensor_layout[node["inputs"][0]]
             tensor_layout[node["output"]] = dict(source)
+            tensor_frac[node["output"]] = tensor_frac[node["inputs"][0]]
             descriptors.append({"opcode": "ELU", "src_base": source["base"],
                                 "dst_base": source["base"], "aux0_base": 0,
                                 "aux1_base": 0, "weight_base": 0, "dim_k": 0,
@@ -280,6 +322,10 @@ def build_images(policy: dict[str, Any], weight_mode: str = "cache") -> dict[str
         elif op == "CONCAT":
             left = tensor_layout[node["inputs"][0]]
             right = tensor_layout[node["inputs"][1]]
+            fl, fr = (tensor_frac[node["inputs"][0]], tensor_frac[node["inputs"][1]])
+            if fl != fr:
+                raise ValueError(f"CONCAT operands on different grids: {fl} vs {fr}")
+            tensor_frac[node["output"]] = fl
             output_base = allocate(node["output"], left["elements"] + right["elements"])
             descriptors.append({"opcode": "CONCAT", "src_base": left["base"],
                                 "dst_base": output_base, "aux0_base": right["base"],
@@ -309,6 +355,8 @@ def build_images(policy: dict[str, Any], weight_mode: str = "cache") -> dict[str
     return {"vector_words": vector_words, "weight_banks": weight_banks,
             "tensor_layout": tensor_layout, "descriptors": descriptors,
             "quant_layers": quant_layers, "vector_words_used": cursor,
+            "act_fracs": dict(out_frac), "obs_frac": obs_frac,
+            "output_frac": out_frac[GEMM_NAMES[-1]],
             "weight_words_used": weight_used, "weight_stream": stream}
 
 
@@ -339,10 +387,10 @@ def fixed_inference(policy: dict[str, Any], images: dict[str, Any],
               for name, value in inputs_q.items()}
     for node in policy["nodes"]:
         if node["op"] == "GEMM":
-            weight_q, bias_q, weight_frac = images["quant_layers"][node["output"]]
+            weight_q, bias_q, shift = images["quant_layers"][node["output"]]
             accum = weight_q.astype(np.int64) @ values[node["inputs"][0]].astype(np.int64)
             values[node["output"]] = sat16(
-                round_shift(accum, weight_frac) + bias_q.astype(np.int64))
+                round_shift(accum, shift) + bias_q.astype(np.int64))
         elif node["op"] == "ELU":
             values[node["output"]] = elu_q8_8(values[node["inputs"][0]])
         elif node["op"] == "CONCAT":
@@ -384,10 +432,11 @@ def evaluate(policy: dict[str, Any], images: dict[str, Any], samples: int,
     for _ in range(samples):
         floating_inputs = {item["name"]: rng.normal(0.0, 1.0, item["count"])
                            for item in policy["inputs"]}
-        fixed_inputs = {name: quantize(value, ACT_FRAC)
+        fixed_inputs = {name: quantize(value, images["obs_frac"])
                         for name, value in floating_inputs.items()}
         floating = float_inference(policy, floating_inputs)
-        fixed = fixed_inference(policy, images, fixed_inputs).astype(np.float64) / (1 << ACT_FRAC)
+        fixed = (fixed_inference(policy, images, fixed_inputs).astype(np.float64)
+                 / (1 << images["output_frac"]))
         errors.append(np.abs(floating - fixed))
         fixed_outputs.append(fixed)
         float_outputs.append(floating)
@@ -485,10 +534,11 @@ extern const int16_t rl_policy_selftest_actions[RL_POLICY_ACTIONS];
 
 
 def export_policy(model_path: Path, out_path: Path, samples: int, seed: int,
-                  c_out: Path | None = None,
-                  weight_mode: str = "cache") -> tuple[dict[str, Any], dict[str, Any]]:
+                  c_out: Path | None = None, weight_mode: str = "cache",
+                  act_fracs: dict | None = None
+                  ) -> tuple[dict[str, Any], dict[str, Any]]:
     policy = load_policy(model_path)
-    images = build_images(policy, weight_mode)
+    images = build_images(policy, weight_mode, act_fracs)
     out_path.mkdir(parents=True, exist_ok=True)
     write_hex(out_path / "vector_cache.hex", images["vector_words"], VECTOR_DEPTH)
     instruction_words = [descriptor_word(item) for item in images["descriptors"]]
@@ -505,7 +555,8 @@ def export_policy(model_path: Path, out_path: Path, samples: int, seed: int,
             write_hex(out_path / f"weight_bank{bank}_tail.hex", words[1024:], 256)
 
     floating_inputs = make_test_inputs(policy)
-    selftest_q = {name: quantize(value, ACT_FRAC) for name, value in floating_inputs.items()}
+    selftest_q = {name: quantize(value, images["obs_frac"])
+                  for name, value in floating_inputs.items()}
     actions_q = fixed_inference(policy, images, selftest_q)
     for index, item in enumerate(policy["inputs"]):
         values = selftest_q[item["name"]]
@@ -561,13 +612,23 @@ def main() -> None:
     parser.add_argument("--samples", type=int, default=1000)
     parser.add_argument("--seed", type=int, default=7)
     parser.add_argument("--c-out", type=Path, default=None)
+    parser.add_argument("--act-fracs", type=Path, default=None,
+                        help="calibrated per-layer activation fractional bits, "
+                             "as written by calibrate_act_fracs.py. Without it "
+                             "every tensor stays on the shipped Q8.8 grid and "
+                             "the output is byte-identical to previous "
+                             "exports.")
     parser.add_argument("--weight-mode", choices=("cache", "stream", "auto"),
                         default="cache",
                         help="where GEMM weights live: the on-chip cache (v1), "
                              "DDR through the v2 AXI master, or cache-if-it-fits")
     args = parser.parse_args()
+    fracs = None
+    if args.act_fracs:
+        data = json.loads(args.act_fracs.read_text())
+        fracs = data.get("act_fracs", data)
     manifest, _ = export_policy(args.model, args.out, args.samples, args.seed,
-                                args.c_out, args.weight_mode)
+                                args.c_out, args.weight_mode, fracs)
     print(json.dumps({"model": manifest["model"], "inputs": manifest["inputs"],
                       "output": manifest["output"],
                       "commands": len(manifest["descriptors"]),

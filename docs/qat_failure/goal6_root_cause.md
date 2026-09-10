@@ -1169,6 +1169,48 @@ under a fifth of one percent. That is not the constraint.
    Python golden, and the policy testbench, since this changes the descriptor
    program.
 
-None of this is implemented or tested here. It is scoped, not done — and the
-sizing above is arithmetic from the RTL, not a measurement.
+### 12.5 Steps 1 and 2 are now done, and RTL-verified
+
+`export_policy.py` takes `--act-fracs` and honours it. Activation formats are
+tracked along the graph rather than by layer index — inputs carry `obs_frac`,
+a GEMM writes its calibrated `f_out`, an ELU preserves its input's format, and
+CONCAT rejects operands on different grids the way `fixed_ref.py` does. The
+descriptor shift is `f_in + f_w - f_out`, each bias is quantized at its own
+`f_out`, and the exporter's fixed-point self-test scales its inputs by
+`obs_frac` and its output by the final layer's frac.
+
+Two properties were checked rather than assumed.
+
+**The default path is byte-identical.** With no `--act-fracs`, every tensor
+stays at Q8.8, `f_in == f_out`, the shift collapses to `f_w`, and the emitted
+images `diff` clean against an export taken before the change. A calibration
+change that silently altered existing exports would invalidate the whole
+verification chain.
+
+**The per-layer path is verified against the RTL.** Exporting with
+`{enc2: 11, obs: 11, act3: 11}` and the rest at 8 produces shifts
+`[14, 12, 11, 16, 14, 14, 11]` — genuinely non-uniform, against the flat
+configuration's `[11, 12, 14, 13, 14, 14, 14]` — and `tb_policy_e2e` **PASSES**
+at 1,799 cycles. The full standalone regression (`primitives`, `gemm`,
+`concat`, `sequencer`, `top`) passes unchanged.
+
+Those three tensors were chosen because they are the ones that do not feed an
+ELU: `enc2` is the latent and goes to CONCAT, `act3` is the output. Everything
+that *does* feed an ELU still has to stay at Q8.8 until step 3 emits the AFFINE
+pairs, so this is the exportable subset, not the full capability.
+
+**Step 3 (AFFINE pairs around the ELUs) is still not done**, and without it no
+INT8-activation calibration is exportable. What has changed is that the
+exporter is no longer *structurally* limited to one global format, and the
+hardware has now been shown to execute a per-layer program correctly rather
+than only argued to be capable of it.
+
+One caveat found on the way: the exporter's self-test drives the network with
+`rng.normal(0, 1)` rather than real observations, so it cannot validate a
+calibration derived from measured activation statistics. On the ELU-free
+configuration above it reports mean absolute error **0.0041** against the flat
+grid's 0.0065 — better on average — while maximum error rises from 0.039 to
+1.307, which is saturation on synthetic inputs the calibration never saw.
+Choosing a deployable INT16 calibration needs the self-test to use real
+observations first. That is a fourth step, and it is not done either.
 
