@@ -187,16 +187,17 @@ including its scope and the testbench defect it found and fixed.
 ## Control quality
 
 **W16A16 is the deployed baseline.** In the recorded precision sweep, reducing
-weight precision to 8 bits preserved control success; reducing activations to
-8 bits sharply reduced it.
+weight precision to 8 bits preserved control success. Reducing activations to
+8 bits appeared to destroy it — until the activation scales were recalibrated.
 
-| Precision | Mean control success | Mean wheel support | Model bytes |
-| :--- | ---: | ---: | ---: |
-| FP32 | 1.000 | 1.000 | — |
-| **W16A16 · deployed** | **1.000** | **1.000** | **78,412** |
-| W8A16 | 1.000 | 1.000 | 40,012 |
-| W8A8 | 0.041 | 0.936 | 39,631 |
-| W4A8 | 0.000 | 0.394 | 20,431 |
+| Precision | Activation scales | Mean control success | Mean wheel support | Model bytes |
+| :--- | :--- | ---: | ---: | ---: |
+| FP32 | — | 1.000 | 1.000 | — |
+| **W16A16 · deployed** | fixed Q8.8 | **1.000** | **1.000** | **78,412** |
+| W8A16 | fixed Q8.8 | 1.000 | 1.000 | 40,012 |
+| W8A8 | peak + 1.25× headroom | 0.041 | 0.936 | 39,631 |
+| **W8A8** | **99.5th percentile** | **1.000** | **1.000** | **39,631** |
+| W4A8 | 99.5th percentile | 0.000 | 0.658 | 20,431 |
 
 Seven command segments, **one training seed**, evaluated in closed-loop
 simulation. W/A denotes weight/activation bit width. Sources:
@@ -204,13 +205,37 @@ simulation. W/A denotes weight/activation bit width. Sources:
 [per-segment figure](assets/precision_cliff.svg),
 [evidence and caveats](docs/EVIDENCE.md#control-quality).
 
-W8A16 is an experimental result: the current deployment exporter emits INT16
-weights and Q8.8 activations. Deploying 8-bit weights requires exporter changes.
+**The two W8A8 rows are the same arithmetic on the same weights.** They differ
+only in how eight fractional-bit values were chosen. Because the requantizer is
+a shifter, every scale is a power of two, so one outlier past a binade boundary
+costs a whole bit for every other sample — under the original peak-based rule no
+tensor used even 40% of INT8's range. Clipping at the 99.5th percentile instead
+saturates 0.115% of samples. This **retracts** a claim published here earlier,
+that the precision cliff sits at 8-bit activations; it sits at 4-bit weights.
+Across three independently trained policies the same change moves mean success
+from 0.285 to 0.906.
 
-**Why didn't W8A8 QAT recover control?** The experiments found a reproducible
-learning-rate collapse, but fixing the learning rate did not restore turning.
-Read the [QAT findings](docs/QAT_RESULTS.md),
-[intervention results](docs/qat_failure/goal5_mechanism_confirmation.md), and
+W8A8 still tracks less accurately than W8A16 — yaw RMSE 0.0867 / 0.0976 against
+FP32's 0.0191 / 0.0178, where W8A16 is within 13% — and success is a threshold
+metric, so W16A16 remains the deployed baseline.
+
+**Every row below W16A16 is a simulation result.** The exporter emits INT16
+weights, and until recently fixed `ACT_FRAC = 8` as a module constant, so no
+calibrated activation configuration had ever been exportable. The per-layer
+shift path now exists and is verified against the RTL, but tensors feeding an
+ELU still need `AFFINE` conversion pairs that are not yet emitted. Nothing below
+W16A16 has run on hardware. See
+[the deployability analysis](docs/qat_failure/goal6_root_cause.md#12-can-any-of-this-actually-be-deployed).
+
+**Why didn't W8A8 QAT recover control?** Three interventions were tried and all
+three failed with their targets verifiably controlled: fixing the learning rate,
+freezing the encoder bit-identically for 2000 iterations, and anchoring the
+policy to a frozen FP32 teacher. Measured without any RL in the loop, W8A16 fits
+the FP32 policy to within PPO's own KL threshold and W8A8 cannot get within 32×
+of it — so QAT fails on a representational limit, not an optimizer pathology.
+Most of the collapse that motivated the investigation was the calibration above.
+Read the [root-cause analysis](docs/qat_failure/goal6_root_cause.md),
+[QAT findings](docs/QAT_RESULTS.md), and
 [research record](docs/qat_failure/), including failed hypotheses and retractions.
 
 ## Explore the project
