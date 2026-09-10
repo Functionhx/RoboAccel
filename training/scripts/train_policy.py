@@ -34,7 +34,8 @@ from wheel_legged_gym.envs import *  # noqa: F401,F403,E402
 from wheel_legged_gym.utils import get_args, task_registry  # noqa: E402
 from wheel_legged_gym.utils.helpers import class_to_dict  # noqa: E402
 
-from roboaccel_quant.quant_policy import QuantActorCriticSequence  # noqa: E402
+from roboaccel_quant.quant_policy import QuantActorCriticSequence, build_from_checkpoint  # noqa: E402
+from roboaccel_quant.teacher_kl import TeacherKL, install_teacher_kl_class  # noqa: E402
 from roboaccel_quant.torch_hw import QuantConfig  # noqa: E402
 
 PRESETS = {
@@ -101,6 +102,51 @@ def install_quant_policy(cfg: QuantConfig) -> None:
         opr.ActorCriticRobust = factory
 
 
+def install_encoder_freeze() -> None:
+    """Freeze the history encoder the way the upstream residual controller does.
+
+    ppo.py reads `actor_critic.encoder_frozen` *in its constructor* to decide
+    whether to build `extra_optimizer` at all, and refuses a nonzero auxiliary
+    learning rate when the flag is set. Setting the attribute on the finished
+    runner would therefore be a silent no-op -- the auxiliary optimizer would
+    already exist and would keep stepping. It has to be an attribute of the
+    class the runner is about to instantiate.
+
+    Must run AFTER install_quant_policy, so it wraps the quantized factory
+    rather than the class the factory replaced.
+    """
+    import wheel_legged_gym.rsl_rl.runners.on_policy_runner as opr
+
+    wrapped = {}
+    for name in ("ActorCriticSequence", "ActorCriticRobust"):
+        base = getattr(opr, name, None)
+        if base is None:
+            continue
+        if base not in wrapped:
+            class frozen(base):                       # noqa: N801  matches upstream style
+                def __init__(self, *a, **kw):
+                    super().__init__(*a, **kw)
+                    self.encoder_frozen = True
+                    self.encoder.requires_grad_(False)
+
+            frozen.__name__ = f"FrozenEncoder_{base.__name__}"
+            wrapped[base] = frozen
+        # Both names must resolve to the SAME subclass: patching them
+        # separately would build two distinct classes and make which one the
+        # runner picked depend on policy_class_name.
+        setattr(opr, name, wrapped[base])
+
+
+def param_digest(module) -> str:
+    """SHA-256 over the raw bytes of a module's parameters, in name order."""
+    import hashlib
+    h = hashlib.sha256()
+    for name, p in sorted(module.named_parameters()):
+        h.update(name.encode())
+        h.update(p.detach().cpu().contiguous().numpy().tobytes())
+    return h.hexdigest()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(add_help=False)
     ap.add_argument("--run", required=True)
@@ -115,6 +161,60 @@ def main() -> int:
                          "that directly (goal.md section 19).")
     ap.add_argument("--task", default="robust_v1",
                     help="must match SOLID_FP32 for a valid control")
+    ap.add_argument("--schedule", default=None, choices=["adaptive", "fixed"],
+                    help="algorithm.schedule. 'fixed' disables the adaptive "
+                         "learning-rate controller entirely, which is the only "
+                         "way to give a W8A8 run the same step size as the FP32 "
+                         "control -- under 'adaptive' the quantization KL noise "
+                         "floor pins it at 1e-5 (goal4.md section 3).")
+    ap.add_argument("--learning-rate", type=float, default=None,
+                    help="algorithm.learning_rate. Only meaningful with "
+                         "--schedule fixed; otherwise the controller overwrites it.")
+    ap.add_argument("--desired-kl", type=float, default=None,
+                    help="override algorithm.desired_kl. rsl_rl divides the "
+                         "actor learning rate by 1.5 whenever the measured "
+                         "policy KL exceeds 2*desired_kl, with a hard floor of "
+                         "1e-5. Under W8A8 fake-quant a single 1e-5 weight step "
+                         "already produces KL 0.067 (scripts/kl_amplification.py), "
+                         "which is 6.7x the shipped 0.005*2 threshold -- so the "
+                         "controller pinned the learning rate at the floor for "
+                         "2000/2000 iterations and no amount of reward shaping "
+                         "could move the policy. Raising this above the "
+                         "quantization KL noise floor tests that directly "
+                         "(goal4.md section 3).")
+    ap.add_argument("--freeze-encoder", action="store_true",
+                    help="freeze every encoder parameter and delete its "
+                         "optimizer (goal6.md Experiment 1). The encoder has "
+                         "its own Adam at algorithm.extra_learning_rate and is "
+                         "NEVER touched by the adaptive-KL controller, so when "
+                         "W8A8 pins the actor at the 1e-5 floor the encoder "
+                         "keeps stepping at 1e-3 -- a 100:1 ratio. The logged "
+                         "Encoder/policy_kl says that update alone moves the "
+                         "policy by a median KL of 0.95 per iteration, ~100x "
+                         "the actor's entire 0.01 budget. This flag removes "
+                         "that disturbance so it can be tested causally.")
+    ap.add_argument("--teacher-kl", type=float, default=None, metavar="BETA",
+                    help="add beta*KL(pi_teacher||pi_student) to the PPO loss, "
+                         "with a frozen FP32 copy of the warm start as teacher "
+                         "(goal6.md Experiment 2). PPO's objective contains no "
+                         "term referring to the reference policy, so a QAT "
+                         "student is free to drift anywhere the reward permits; "
+                         "goal5 showed that removing the learning-rate brake "
+                         "without adding such a term made the policy worse. "
+                         "The teacher is evaluated on the STUDENT'S on-policy "
+                         "states. See hwq/teacher_kl.py for the injection and "
+                         "scripts/check_teacher_kl.py for its proof.")
+    ap.add_argument("--teacher-kl-mode", default="mean", choices=["mean", "full"],
+                    help="'mean' matches the teacher's action mean at the "
+                         "teacher's sigma, which is what actually gets "
+                         "deployed. 'full' is the literal Gaussian KL and is "
+                         "degenerate: the student widens its exploration std "
+                         "instead of matching the mean (see hwq/teacher_kl.py). "
+                         "Kept so the degeneracy can be reproduced.")
+    ap.add_argument("--teacher-from", type=Path, default=None,
+                    help="teacher checkpoint; defaults to --init-from, which is "
+                         "what makes it a behaviour-preservation term rather "
+                         "than distillation from a different policy")
     ap.add_argument("--quant", default=None, choices=sorted(PRESETS))
     ap.add_argument("--stage", type=int, default=None, choices=sorted(STAGES))
     ap.add_argument("--init-from", type=Path, default=None)
@@ -128,7 +228,7 @@ def main() -> int:
     ap.add_argument("--save-interval", type=int, default=250)
     known, rest = ap.parse_known_args()
     if known.ideal_rounding:
-        import roboaccel_quant.torch_hw as _th
+        import hwq.torch_hw as _th
         _th.IDEAL_ROUNDING = True
         print('IDEAL_ROUNDING enabled: requantizer rounds half away from zero')
 
@@ -183,6 +283,22 @@ def main() -> int:
     train_cfg = task_registry.train_cfgs[known.task]
     train_cfg.runner.save_interval = known.save_interval
     train_cfg.runner.max_iterations = known.iters
+    if known.desired_kl is not None:
+        train_cfg.algorithm.desired_kl = known.desired_kl
+    if known.schedule is not None:
+        train_cfg.algorithm.schedule = known.schedule
+    if known.learning_rate is not None:
+        train_cfg.algorithm.learning_rate = known.learning_rate
+    if known.freeze_encoder:
+        # Order matters: this wraps whatever install_quant_policy left bound.
+        install_encoder_freeze()
+        # ppo.py raises if encoder_frozen is set while this is nonzero, so the
+        # two always travel together and a half-applied freeze cannot start.
+        train_cfg.algorithm.extra_learning_rate = 0.0
+    if known.teacher_kl is not None:
+        # Wraps last, so it composes with the quantized factory and the freeze
+        # rather than replacing either.
+        install_teacher_kl_class()
     runner, train_cfg = task_registry.make_alg_runner(
         env=env, name=known.task, args=args, train_cfg=train_cfg,
         log_root=str(log_root))
@@ -203,6 +319,53 @@ def main() -> int:
         print(f"quantized policy confirmed: {type(ac).__name__} "
               f"W{cfg.weight_bits}A{cfg.act_bits}")
 
+    # Same failure mode as the reward override: mutating a config object after
+    # the consumer has read it is a silent no-op. Read back from the built
+    # algorithm, not from the config we just wrote.
+    if known.desired_kl is not None:
+        got = runner.alg.desired_kl
+        if got is None or abs(got - known.desired_kl) > 1e-12:
+            raise SystemExit(
+                f"desired_kl override did not reach the algorithm: "
+                f"runner.alg.desired_kl={got}, expected {known.desired_kl}")
+        print(f"desired_kl override VERIFIED in alg: {got} "
+              f"(lr is throttled above KL {2 * got})")
+
+    if known.schedule is not None and runner.alg.schedule != known.schedule:
+        raise SystemExit(f"schedule override did not reach the algorithm: "
+                         f"runner.alg.schedule={runner.alg.schedule!r}")
+    if known.learning_rate is not None:
+        got = [g["lr"] for g in runner.alg.optimizer.param_groups]
+        if any(abs(x - known.learning_rate) > 1e-12 for x in got):
+            raise SystemExit(f"learning_rate override did not reach the optimizer: "
+                             f"param_group lrs={got}, expected {known.learning_rate}")
+        print(f"learning_rate override VERIFIED in optimizer: {got[0]:.3e} "
+              f"schedule={runner.alg.schedule}")
+
+    if known.freeze_encoder:
+        # Four independent facts, because any one of them alone can be true
+        # while the encoder still moves: the flag reached the module, the
+        # auxiliary optimizer was never built, every encoder parameter is
+        # detached from autograd, and PPO's own encoder parameter list is
+        # empty (it is what the auxiliary gradient clip would have used).
+        ac = runner.alg.actor_critic
+        if not getattr(ac, "encoder_frozen", False):
+            raise SystemExit("freeze requested but actor_critic.encoder_frozen "
+                             "is not set; install_encoder_freeze patched the "
+                             "wrong module global")
+        if runner.alg.extra_optimizer is not None:
+            raise SystemExit("freeze requested but PPO still built "
+                             "extra_optimizer; the encoder would keep stepping")
+        trainable = [n for n, q in ac.encoder.named_parameters() if q.requires_grad]
+        if trainable:
+            raise SystemExit(f"encoder parameters still require grad: {trainable}")
+        if runner.alg.encoder_parameters:
+            raise SystemExit("PPO still holds encoder parameters for clipping")
+        print(f"encoder freeze VERIFIED: encoder_frozen=True, extra_optimizer=None, "
+              f"{sum(q.numel() for q in ac.encoder.parameters())} encoder params "
+              f"requires_grad=False, extra_learning_rate="
+              f"{train_cfg.algorithm.extra_learning_rate}")
+
     if known.init_from:
         sd = dict(torch.load(known.init_from,
                              map_location=runner.device)["model_state_dict"])
@@ -215,8 +378,125 @@ def main() -> int:
                 raise SystemExit("refusing to fine-tune from a partial checkpoint")
         print(f"warm-started from {known.init_from}")
 
+    ac = runner.alg.actor_critic
+    encoder_sha_start = param_digest(ac.encoder)
+    actor_sha_start = param_digest(ac.actor)
+    print(f"encoder digest at iteration 0: {encoder_sha_start}")
+    print(f"actor   digest at iteration 0: {actor_sha_start}")
+
+    if known.freeze_encoder:
+        # A start/end comparison cannot distinguish "never moved" from "moved
+        # and came back", and it reports the failure 2000 iterations too late.
+        # Check around every update for the first ten, then every hundredth.
+        _update = runner.alg.update
+        _state = {"n": 0, "actor_moved": False}
+
+        def guarded_update():
+            n = _state["n"]
+            watch = n < 10 or n % 100 == 0
+            before = param_digest(ac.encoder) if watch else None
+            a_before = param_digest(ac.actor) if watch else None
+            out = _update()
+            if watch:
+                after = param_digest(ac.encoder)
+                if after != before:
+                    raise SystemExit(
+                        f"ENCODER MOVED during update {n}: {before[:16]} -> "
+                        f"{after[:16]}. The freeze is not effective; abort "
+                        f"rather than produce an uninterpretable arm.")
+                if param_digest(ac.actor) != a_before:
+                    _state["actor_moved"] = True
+            _state["n"] = n + 1
+            if n == 9 and not _state["actor_moved"]:
+                raise SystemExit(
+                    "actor parameters did not change in ten updates: this arm "
+                    "would measure a frozen network, not a frozen encoder")
+            return out
+
+        runner.alg.update = guarded_update
+
+    if known.teacher_kl is not None:
+        teacher_path = known.teacher_from or known.init_from
+        if teacher_path is None:
+            raise SystemExit("--teacher-kl needs a teacher: pass --init-from "
+                             "(preferred) or --teacher-from")
+        teacher = build_from_checkpoint(
+            teacher_path,
+            quant=QuantConfig(quant_weights=False, quant_obs=False,
+                              quant_hidden=False, quant_output=False),
+            device=runner.device)
+        tk = TeacherKL(teacher, known.teacher_kl, runner.alg.entropy_coef,
+                       list(ac.actor.parameters()) + [ac.std],
+                       mode=known.teacher_kl_mode)
+
+        # goal6.md: "Verify that beta=1.0 actually changes gradients. Treat a
+        # no-op configuration as a bug." The offline proof in
+        # scripts/check_teacher_kl.py runs on CPU against calibration states;
+        # this repeats it on this run's device, this run's policy and this
+        # run's own first observations, so a wiring mistake cannot survive.
+        probe_obs, probe_hist = env.get_observations()
+        probe_obs = probe_obs[:512].to(runner.device)
+        probe_hist = probe_hist[:512].to(runner.device)
+
+        def _actor_grad_norm(attached):
+            ac._teacher_kl = tk if attached else None
+            ac.update_distribution(probe_obs, probe_hist)
+            ac.zero_grad(set_to_none=True)
+            (-runner.alg.entropy_coef * ac.entropy.mean()).backward()
+            n = torch.sqrt(sum((q.grad.square().sum() for q in tk.actor_parameters
+                                if q.grad is not None),
+                               start=torch.zeros((), device=runner.device)))
+            ac.zero_grad(set_to_none=True)
+            return float(n)
+
+        off = _actor_grad_norm(False)
+        on = _actor_grad_norm(True)
+        if not on > off * 1.0001:
+            raise SystemExit(
+                f"teacher term is a no-op: actor gradient norm {off:.6g} with "
+                f"beta=0 vs {on:.6g} with beta={known.teacher_kl}. Refusing to "
+                f"run an arm that would look like a teacher experiment and be "
+                f"an ordinary PPO run.")
+        teacher_kl_at_start = tk._sum["teacher_kl"] / max(tk._n, 1)
+        ac._teacher_kl = tk
+        tk.reset_stats(); tk.calls = 0
+        print(f"teacher KL VERIFIED: beta={known.teacher_kl} teacher={teacher_path} "
+              f"actor grad-norm {off:.4g} -> {on:.4g} ({on / max(off, 1e-12):.1f}x), "
+              f"KL(teacher||student) at warm start = {teacher_kl_at_start:.4f}")
+
+        _pre_teacher_update = runner.alg.update
+
+        def teacher_logged_update():
+            out = _pre_teacher_update()
+            # log() reads alg.diagnostics after update() returns, so injecting
+            # here puts the teacher terms in metrics.jsonl beside PPO's own.
+            stats = tk.drain()
+            runner.alg.diagnostics.update(stats)
+            # PPO averaged the HIJACKED entropy into Policy/entropy, which
+            # would make that column mean something different in this arm than
+            # in every other one. Keep the hijacked value under a name that
+            # says what it is, and restore the column to the real entropy.
+            if "Teacher/true_entropy" in stats:
+                runner.alg.diagnostics["Teacher/injected_entropy"] = \
+                    runner.alg.diagnostics["Policy/entropy"]
+                runner.alg.diagnostics["Policy/entropy"] = stats["Teacher/true_entropy"]
+            return out
+
+        runner.alg.update = teacher_logged_update
+
     meta = {"run": known.run, "task": known.task,
             "reward_ang_vel": known.reward_ang_vel,
+            "desired_kl": known.desired_kl,
+            "schedule": known.schedule,
+            "learning_rate": known.learning_rate,
+            "freeze_encoder": bool(known.freeze_encoder),
+            "teacher_kl_beta": known.teacher_kl,
+            "teacher_kl_mode": known.teacher_kl_mode,
+            "teacher_from": str(known.teacher_from or known.init_from)
+                            if known.teacher_kl is not None else None,
+            "extra_learning_rate": float(train_cfg.algorithm.extra_learning_rate),
+            "encoder_sha256_start": encoder_sha_start,
+            "actor_sha256_start": actor_sha_start,
             "quant": known.quant, "stage": known.stage,
             "quant_cfg": cfg.__dict__ if cfg else None,
             "init_from": str(known.init_from) if known.init_from else None,
@@ -249,6 +529,21 @@ def main() -> int:
 
     runner.learn(num_learning_iterations=known.iters, init_at_random_ep_len=True)
     runner.save(os.path.join(runner.log_dir, f"model_{known.iters}.pt"))
+    encoder_sha_end, actor_sha_end = param_digest(ac.encoder), param_digest(ac.actor)
+    print(f"encoder digest at iteration {known.iters}: {encoder_sha_end} "
+          f"({'UNCHANGED' if encoder_sha_end == encoder_sha_start else 'CHANGED'})")
+    print(f"actor   digest at iteration {known.iters}: {actor_sha_end} "
+          f"({'UNCHANGED' if actor_sha_end == actor_sha_start else 'CHANGED'})")
+    if known.freeze_encoder and encoder_sha_end != encoder_sha_start:
+        raise SystemExit("encoder changed over training despite --freeze-encoder")
+    if actor_sha_end == actor_sha_start:
+        raise SystemExit("actor did not change over training; nothing was learned")
+    (Path(runner.log_dir) / "digests.json").write_text(json.dumps(
+        {"encoder_sha256_start": encoder_sha_start,
+         "encoder_sha256_end": encoder_sha_end,
+         "actor_sha256_start": actor_sha_start,
+         "actor_sha256_end": actor_sha_end,
+         "freeze_encoder": bool(known.freeze_encoder)}, indent=2))
     print(f"TRAIN_DONE {runner.log_dir}")
     return 0
 

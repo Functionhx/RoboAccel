@@ -53,14 +53,22 @@ from roboaccel_quant.torch_hw import QuantConfig                        # noqa: 
 # and never affects the action mean, so the actor is what moves mu.
 STEPPED = ("actor.",)
 
+# goal6.md H1: the encoder has its own optimizer at a fixed learning rate that
+# the adaptive controller never touches, and its output is concatenated into
+# the actor input. Stepping "encoder." instead measures how much policy KL a
+# step of the SAME size in that block produces -- which is what decides whether
+# encoder drift is a nuisance or the dominant disturbance.
+STEP_BLOCKS = {"actor": ("actor.",), "encoder": ("encoder.",),
+               "both": ("actor.", "encoder.")}
+
 
 def action_mean(net, obs, hist):
     with torch.no_grad():
         return net.act_inference(obs, hist)[0]   # (action_mean, latent)
 
 
-def integer_weight_codes(net, cfg) -> torch.Tensor:
-    """The actor's weights as INTEGER CODES, exactly as _HwGemm computes them.
+def integer_weight_codes(net, cfg, blocks=("actor",)) -> torch.Tensor:
+    """The stepped weights as INTEGER CODES, exactly as _HwGemm computes them.
 
     A perturbation smaller than one quantization LSB that crosses no boundary
     leaves these codes bit-identical, which is precisely why two different step
@@ -76,7 +84,8 @@ def integer_weight_codes(net, cfg) -> torch.Tensor:
     from roboaccel_quant.torch_hw import round_away, weight_frac
     parts = []
     with torch.no_grad():
-        for m in net.actor.modules():
+        mods = [m for b in blocks for m in getattr(net, b).modules()]
+        for m in mods:
             if not hasattr(m, "weight") or not hasattr(m, "active"):
                 continue
             if not m.active():
@@ -92,7 +101,7 @@ def kl_of(mu0, mu1, sigma):
     return float((((mu0 - mu1) ** 2) / (2.0 * sigma ** 2)).sum(-1).mean())
 
 
-def perturb_(net, lr, gen, kind="sign"):
+def perturb_(net, lr, gen, kind="sign", stepped=STEPPED):
     """Perturb the stepped parameters by a step of scale `lr`.
 
     Two models, because the conclusion should not depend on which one is used:
@@ -109,7 +118,7 @@ def perturb_(net, lr, gen, kind="sign"):
     """
     saved = {}
     for name, p in net.named_parameters():
-        if not any(name.startswith(s) for s in STEPPED):
+        if not any(name.startswith(s) for s in stepped):
             continue
         saved[name] = p.detach().clone()
         if kind == "sign":
@@ -139,9 +148,17 @@ def main() -> int:
     ap.add_argument("--perturbation", default="sign",
                     choices=["sign", "gauss"],
                     help="step model; see perturb_()")
+    ap.add_argument("--stepped", default="actor", choices=sorted(STEP_BLOCKS),
+                    help="which parameter block the step is applied to. "
+                         "'actor' is what the adaptive KL controller steps "
+                         "(goal5); 'encoder' is what the untouched auxiliary "
+                         "optimizer steps (goal6 H1).")
     ap.add_argument("--lrs", default="1e-6,1e-5,1e-4,2.56e-4,1e-3")
     ap.add_argument("--out", default=None)
     a = ap.parse_args()
+
+    stepped = STEP_BLOCKS[a.stepped]
+    code_blocks = tuple(b.rstrip(".") for b in stepped)
 
     d = np.load(a.obs)
     obs = torch.from_numpy(d["obs"][: a.samples]).float()
@@ -166,7 +183,8 @@ def main() -> int:
                Path(a.checkpoint).read_bytes()).hexdigest(),
            "obs_file": a.obs, "act_fracs_file": a.act_fracs,
            "samples": int(obs.shape[0]), "trials": a.trials,
-           "stepped_prefixes": list(STEPPED),
+           "stepped_prefixes": list(stepped),
+           "stepped_block": a.stepped,
            "perturbation": a.perturbation,
            "desired_kl": DESIRED_KL,
            "kl_decrease_threshold": DESIRED_KL * 2.0,
@@ -177,17 +195,17 @@ def main() -> int:
         net = build_from_checkpoint(a.checkpoint, quant=cfg, device="cpu")
         sigma = net.std.detach().reshape(-1)   # exploration std is not quantized
         mu0 = action_mean(net, obs, hist)
-        w0 = integer_weight_codes(net, cfg)
+        w0 = integer_weight_codes(net, cfg, code_blocks)
         out.setdefault("sigma_mean", float(sigma.mean()))
         for lr in [float(x) for x in a.lrs.split(",")]:
             kls, dmus, crossed = [], [], []
             for t in range(a.trials):
                 gen = torch.Generator().manual_seed(1000 + t)
-                saved = perturb_(net, lr, gen, a.perturbation)
+                saved = perturb_(net, lr, gen, a.perturbation, stepped)
                 mu1 = action_mean(net, obs, hist)
                 kls.append(kl_of(mu0, mu1, sigma))
                 dmus.append(float((mu1 - mu0).abs().mean()))
-                w1 = integer_weight_codes(net, cfg)
+                w1 = integer_weight_codes(net, cfg, code_blocks)
                 crossed.append(int((w1 != w0).sum()) if w0.numel() else -1)
                 restore_(net, saved)
             out["results"].setdefault(f"{lr:g}", {})[arm] = {
@@ -204,7 +222,7 @@ def main() -> int:
     for lr, r in out["results"].items():
         fl = r["float"]
         print(f"\n--- one Adam step at lr={lr} "
-              f"(|dw| = {float(lr):g} elementwise, actor only) ---")
+              f"(|dw| = {float(lr):g} elementwise, {a.stepped} only) ---")
         print(f"{'arm':10s} {'policy KL':>12s} {'amplification':>14s} "
               f"{'controller':>22s}")
         for arm in arms:
