@@ -7,7 +7,7 @@
   .h{font-size:15px;font-weight:600}
   .p{font-size:13px;fill:#8C8C8C}
   .n{font-size:13px;font-weight:600}
-  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#C2410C}
   .cap{font-size:12px;fill:#8C8C8C}
   .ax{font-size:12px;fill:#8C8C8C}
 </style>
@@ -15,7 +15,7 @@
 <rect x="0.5" y="0.5" width="879" height="559" fill="none" stroke="#D8D8D8"/>
 <rect x="1" y="1" width="878" height="42" fill="#000000"/>
 <text x="20" y="27" class="band-title">Figure 2 How the pieces fit together</text>
-<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2F2AC8"/></marker><marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8C8C8C"/></marker></defs>
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C2410C"/></marker><marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#C2410C"/></marker><marker id="am" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8C8C8C"/></marker></defs>
 <rect x="16" y="58" width="848" height="82" rx="3" fill="#F2F2F2" stroke="#D8D8D8"/>
 <text x="30" y="78" class="stage">Training, an external dependency</text>
 <rect x="30" y="82" width="380" height="48" rx="3" fill="#FFFFFF" stroke="#8C8C8C" stroke-width="1"/>
@@ -29,7 +29,7 @@
 <text x="44" y="204" class="h">Calibrate + quantize</text>
 <text x="44" y="225" class="p">per-layer activation scales</text>
 <text x="44" y="242" class="mono">INT16 · Q8.8 · INT48 accumulate</text>
-<rect x="304" y="180" width="254" height="58" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
+<rect x="304" y="180" width="254" height="58" rx="3" fill="#FFFFFF" stroke="#C2410C" stroke-width="1.8"/>
 <text x="318" y="204" class="h">Fixed-point reference</text>
 <text x="318" y="225" class="p">NumPy integer, bit-accurate</text>
 <text x="318" y="242" class="mono">the arbiter</text>
@@ -45,30 +45,30 @@
 <rect x="236" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#000000" stroke-width="1.2"/>
 <text x="248" y="322" font-size="13.5" font-weight="600">FPGA descriptors</text>
 <text x="248" y="340" class="cap">13 descriptors</text>
-<rect x="442" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
+<rect x="442" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#C2410C" stroke-width="1.8"/>
 <text x="454" y="322" font-size="13.5" font-weight="600">STM32 scalar C</text>
 <text x="454" y="340" class="cap">24 golden vectors</text>
-<text x="620" y="322" text-anchor="end" font-size="10.5" fill="#2F2AC8" font-weight="600" >on silicon</text>
-<rect x="648" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
+<text x="620" y="322" text-anchor="end" font-size="10.5" fill="#C2410C" font-weight="600" >on silicon</text>
+<rect x="648" y="300" width="190" height="56" rx="3" fill="#FFFFFF" stroke="#C2410C" stroke-width="1.8"/>
 <text x="660" y="322" font-size="13.5" font-weight="600">STM32 SMLALD</text>
 <text x="660" y="340" class="cap">24 golden vectors</text>
-<text x="826" y="322" text-anchor="end" font-size="10.5" fill="#2F2AC8" font-weight="600" >on silicon</text>
+<text x="826" y="322" text-anchor="end" font-size="10.5" fill="#C2410C" font-weight="600" >on silicon</text>
 <text x="30" y="374" class="cap">All four are compared against the NumPy integer reference. Zero mismatches. Two of them run on physical hardware.</text>
 <rect x="16" y="398" width="848" height="130" rx="3" fill="#F2F2F2" stroke="#D8D8D8"/>
 <text x="30" y="418" class="stage">Deployment targets</text>
-<rect x="30" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
+<rect x="30" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#C2410C" stroke-width="1.8"/>
 <text x="44" y="448" class="h">RoboAccel FPGA — Zynq-7000</text>
 <text x="44" y="469" class="p">PL 100 MHz · 72 DSP48E1 · no DMA</text>
 <text x="44" y="486" class="p">descriptor sequencer, not fixed RTL</text>
 <text x="44" y="503" class="mono">17.99 µs pure inference (1,799 cycles)</text>
-<rect x="450" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#2F2AC8" stroke-width="1.8"/>
+<rect x="450" y="424" width="400" height="92" rx="3" fill="#FFFFFF" stroke="#C2410C" stroke-width="1.8"/>
 <text x="464" y="448" class="h">STM32H723 — Cortex-M7</text>
 <text x="464" y="469" class="p">480 MHz · SMLALD SIMD · DTCM-resident</text>
 <text x="464" y="486" class="p">no accelerator, no external memory</text>
 <text x="464" y="503" class="mono">259.09 µs pure inference (on silicon)</text>
-<path d="M220,140 V176" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
-<path d="M660,140 V176" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
-<path d="M440,240 V296" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
-<path d="M440,386 V420" stroke="#2F2AC8" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M220,140 V176" stroke="#C2410C" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M660,140 V176" stroke="#C2410C" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M440,240 V296" stroke="#C2410C" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+<path d="M440,386 V420" stroke="#C2410C" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
 <text x="16" y="546" class="cap">One arithmetic definition is shared by every stage. The same integer program runs on both targets and is checked against the same reference.</text>
 </svg>

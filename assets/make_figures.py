@@ -37,11 +37,16 @@ RESULTS = HERE.parent / "docs" / "results"
 
 # ---------------------------------------------------------------- theme
 
-# Four values. Black is black, not a tinted stand-in for it; the accent is a
-# plotter-pen blue and is spent only on values that were measured.
+# Four values. Black is black, not a tinted stand-in for it; the accent is
+# spent only on values that were measured.
+#
+# The accent is the dark step of the README's brand orange. These plates set
+# evidence annotations as small as 10.5px, where #E8590C (3.6:1 on paper) is too
+# light to read; #C2410C holds 5.2:1. The banner keeps the brighter step, where
+# the orange appears only as display type at 44px and above.
 INK      = "#000000"   # linework and primary text
 PAPER    = "#FFFFFF"
-PLOT     = "#2F2AC8"   # measured values, and only those
+PLOT     = "#C2410C"   # measured values, and only those
 GHOST    = "#8C8C8C"   # secondary text, hatch, construction lines
 
 # Aliases kept so the older figures keep compiling against one palette.

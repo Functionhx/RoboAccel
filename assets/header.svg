@@ -7,7 +7,7 @@
   .h{font-size:15px;font-weight:600}
   .p{font-size:13px;fill:#8C8C8C}
   .n{font-size:13px;font-weight:600}
-  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#2F2AC8}
+  .mono{font-size:12px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;fill:#C2410C}
   .cap{font-size:12px;fill:#8C8C8C}
   .ax{font-size:12px;fill:#8C8C8C}
 </style>
@@ -39,7 +39,7 @@
 <text x="868" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">635</text>
 <text x="1006" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">478</text>
 <text x="1144" y="256" text-anchor="end" font-size="21" font-family="ui-monospace,'SF Mono',Menlo,Consolas,monospace" fill="#000000">-796</text>
-<path d="M388,284 L388,293 L1148,293 L1148,284" fill="none" stroke="#2F2AC8" stroke-width="1.4"/>
-<text x="768" y="314" text-anchor="middle" font-size="14" style="fill:#2F2AC8" font-weight="600">identical, bit for bit</text>
+<path d="M388,284 L388,293 L1148,293 L1148,284" fill="none" stroke="#C2410C" stroke-width="1.4"/>
+<text x="768" y="314" text-anchor="middle" font-size="14" style="fill:#C2410C" font-weight="600">identical, bit for bit</text>
 <text x="56" y="314" font-size="12.5" style="fill:#8C8C8C">Actions in Q8.8, same reference input</text>
 </svg>
