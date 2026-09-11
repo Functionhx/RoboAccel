@@ -165,8 +165,6 @@ Sources: [FPGA board log](fpga/docs/11_mini7010_vivado2026_port.md),
 The current endurance run completed **40,000 inferences**, with **0 failures and
 0 overruns**.
 
-<!-- TODO: cite the 40,000-inference run's log once it lands in fpga/docs/. -->
-
 An earlier **Vivado 2020.2** build completed **2,200 inferences**, also with **0 failures
 and 0 overruns**. Mean observation-to-action latency was **45.392 µs**
 (45.334–46.101 µs); every output carried checksum `0xBAC07F44`. That run is a separate
