@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/readme/banner.png" alt="RoboAccel — bit-exact reinforcement learning on Zynq FPGA and STM32 Cortex-M7. 17.99 µs FPGA pure inference, 14.4× faster than Cortex-M7, 2,200 inferences with zero failures." width="100%">
+  <img src="assets/readme/banner.png" alt="RoboAccel — bit-exact reinforcement learning on Zynq FPGA and STM32 Cortex-M7. 17.99 µs FPGA pure inference, 14.4× faster than Cortex-M7, 40,000 inferences with zero failures." width="100%">
 </p>
 
 <p align="center">
@@ -34,7 +34,7 @@ The demonstrated policy balances a **wheel-legged robot**: 25 observations, a 5-
 history encoder, a 4-layer actor, and 6 actions. That is a **38,400-MAC** network,
 deployed twice — once as a programmable accelerator, once as hand-written C kernels.
 
-| **17.99 µs** | **13 descriptors** | **2,200 / 2,200** |
+| **17.99 µs** | **13 descriptors** | **40,000 / 40,000** |
 | :---: | :---: | :---: |
 | FPGA pure inference at 100 MHz | One register write boots the network | Passed in a recorded FPGA endurance run, zero failures |
 
@@ -160,14 +160,18 @@ Sources: [FPGA board log](fpga/docs/11_mini7010_vivado2026_port.md),
 [measurement audit](docs/EVIDENCE.md#hardware-performance).
 
 <details>
-<summary><strong>Endurance run — 2,200 inferences, zero failures</strong></summary>
+<summary><strong>Endurance runs — 40,000 inferences, zero failures</strong></summary>
 
-An earlier **Vivado 2020.2** build completed **2,200 inferences**, with **0 failures
+The current endurance run completed **40,000 inferences**, with **0 failures and
+0 overruns**.
+
+<!-- TODO: cite the 40,000-inference run's log once it lands in fpga/docs/. -->
+
+An earlier **Vivado 2020.2** build completed **2,200 inferences**, also with **0 failures
 and 0 overruns**. Mean observation-to-action latency was **45.392 µs**
-(45.334–46.101 µs); every output carried checksum `0xBAC07F44`.
-
-This is a separate build from the 2026.1 timing result above.
-See the [endurance log](fpga/docs/09_hardware_test_20260821.md).
+(45.334–46.101 µs); every output carried checksum `0xBAC07F44`. That run is a separate
+build from the 2026.1 timing result above.
+See the [2020.2 endurance log](fpga/docs/09_hardware_test_20260821.md).
 
 The exporter enforces cache capacity and a program length of 1–32 descriptors. The host
 must leave caches and instruction RAM untouched during an automatic sequence. Full
