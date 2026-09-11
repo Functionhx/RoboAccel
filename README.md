@@ -8,45 +8,46 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-0B0D0E?style=flat-square&amp;labelColor=E8590C" alt="License: MIT"></a>
-  <a href="#hardware-results"><img src="https://img.shields.io/badge/FPGA-Zynq--7000-0B0D0E?style=flat-square&amp;labelColor=E8590C" alt="FPGA: Zynq-7000"></a>
-  <a href="#hardware-results"><img src="https://img.shields.io/badge/MCU-STM32H723-0B0D0E?style=flat-square&amp;labelColor=E8590C" alt="MCU: STM32H723"></a>
+  <a href="#the-result"><img src="https://img.shields.io/badge/FPGA-Zynq--7000-0B0D0E?style=flat-square&amp;labelColor=E8590C" alt="FPGA: Zynq-7000"></a>
+  <a href="#the-result"><img src="https://img.shields.io/badge/MCU-STM32H723-0B0D0E?style=flat-square&amp;labelColor=E8590C" alt="MCU: STM32H723"></a>
 </p>
 
 <p align="center">
-  <a href="#quickstart">Quickstart</a> ·
+  <a href="#sixty-seconds-to-a-result">Quickstart</a> ·
+  <a href="#built-flashed-measured">Hardware</a> ·
   <a href="#how-it-works">Architecture</a> ·
-  <a href="#hardware-results">Hardware results</a> ·
-  <a href="#bit-exact-verification">Verification</a> ·
-  <a href="#control-quality">Control quality</a> ·
-  <a href="#the-hardware">Hardware</a> ·
-  <a href="#explore-the-project">Documentation</a>
+  <a href="#the-result">Results</a> ·
+  <a href="#every-number-has-a-log">Verification</a> ·
+  <a href="#where-it-breaks">Control quality</a> ·
+  <a href="#go-deeper">Documentation</a>
 </p>
 
 ---
 
-## One policy. Two targets. No numerical disagreement.
+## Two chips, one answer.
 
-RoboAccel compiles a trained robot policy for two very different pieces of silicon — a
-**Zynq-7000 FPGA** and an **STM32H723 Cortex-M7** — and then proves that both compute
-exactly the same thing.
+A trained robot policy, compiled for a **Zynq-7000 FPGA** and an **STM32H723 Cortex-M7** —
+then checked until both are provably computing the same thing.
 
-The demonstrated policy balances a **wheel-legged robot**: 25 observations, a 5-frame
-history encoder, a 4-layer actor, and 6 actions. That is a **38,400-MAC** network,
-deployed twice — once as a programmable accelerator, once as hand-written C kernels.
+The demonstrated controller balances a **wheel-legged robot**: 25 observations, a 5-frame
+history encoder, a 4-layer actor, 6 actions. **38,400 MACs**, deployed twice — once as a
+programmable accelerator in programmable logic, once as hand-written C kernels.
 
-| **17.99 µs** | **13 descriptors** | **40,000 / 40,000** |
-| :---: | :---: | :---: |
-| FPGA pure inference at 100 MHz | One register write boots the network | Passed in a recorded FPGA endurance run, zero failures |
+| **17.99 µs** | **14.4×** | **40,000** | **0** |
+| :---: | :---: | :---: | :---: |
+| FPGA pure inference at 100 MHz PL | faster than the same policy on Cortex-M7 | inferences in one endurance run, zero failures | mismatches across 24 golden vectors, on silicon |
 
-Nothing above is estimated. Every figure in this README is backed by a raw log, a
-reproducible command, or a testbench — and where a published result later turned out to
-be wrong, the correction is still in the repository. That is the point.
-Read the [evidence audit](docs/EVIDENCE.md).
+Nothing above is estimated. Every figure on this page is backed by a raw log, a
+reproducible command, or a testbench — and where a result later turned out to be wrong,
+the correction is still in the repository. That is the point.
+[Evidence audit →](docs/EVIDENCE.md)
 
-## Try it in about a minute
+---
 
-**No board, no GPU, no checkpoint.** Linux, Python 3.10+ with `venv` and pip, plus GCC
-for the C kernel check.
+## Sixty seconds to a result.
+
+**No board. No GPU. No checkpoint.** Linux, Python 3.10+ with `venv` and pip, plus GCC for
+the C kernel check.
 
 ```bash
 git clone https://github.com/Functionhx/RoboAccel.git
@@ -70,23 +71,24 @@ VERIFY_AGAINST_RTL: PASS
 H7_HOST_CHECK: PASS
 ```
 
-The first check reads the RTL and the C sources. The second executes the C kernels on
-your host, using a portable equivalent of the ARM `SMLALD` instruction.
+The first check reads the RTL and the C sources. The second executes the C kernels on your
+host, using a portable equivalent of the ARM `SMLALD` instruction.
 
-**Run the RTL too.** With Icarus Verilog (`iverilog` and `vvp`) and Make installed:
+**Then run the RTL.** Five testbenches, no exported model required:
 
 ```bash
 make -C fpga/tb primitives gemm concat sequencer top
 ```
 
-These five testbenches need no exported model. For checkpoint export, extra test
-fixtures, calibration, and board setup, follow the
+Checkpoint export, additional test fixtures, calibration, and board setup live in the
 **[deployment guide →](docs/GETTING_STARTED.md)**.
 
-## The hardware
+---
 
-Two boards, one arithmetic contract. Both were built, flashed, and measured — these are
-the physical units the results below come from.
+## Built, flashed, measured.
+
+Two boards, one arithmetic contract. These are the physical units every number below comes
+from.
 
 <p align="center">
   <img src="assets/hardware/mini7010-zynq.jpg" height="300" alt="MINI_7010 Zynq-7000 board powering up with its status LED lit">
@@ -94,7 +96,7 @@ the physical units the results below come from.
   <img src="assets/hardware/stm32h723.jpg" height="300" alt="STM32H723VGT6 board with motor, CAN, UART and power connectors populated">
 </p>
 
-| Target | Deployed configuration |
+| | Deployed configuration |
 | :--- | :--- |
 | **FPGA** | MINI_7010 · XC7Z010CLG400 · 100 MHz PL |
 | **MCU** | STM32H723VGT6 · 480 MHz · scalar and `SMLALD` SIMD kernels |
@@ -104,35 +106,24 @@ the physical units the results below come from.
 | Program storage | 32 × 128-bit instruction RAM; 13 descriptors used |
 | Boot and readback | JTAG boot; results read through a JTAG mailbox |
 
-## How it works
+---
+
+## How it works.
 
 **One arithmetic contract, two deployment paths.** A NumPy integer reference defines
 fixed-point rounding, saturation, and ELU behavior. Every implementation is checked
 against it — that single decision is what makes the two targets comparable at all.
 
-```mermaid
-flowchart TB
-    policy["Trained policy"] --> onnx["ONNX export"]
-    onnx --> fpga["Descriptor program<br/>+ cache images"]
-    onnx --> mcu["Generated C model<br/>+ golden vectors"]
-    fpga --> zynq["Zynq-7000<br/>FPGA accelerator"]
-    mcu --> stm32["STM32H723<br/>Cortex-M7 kernels"]
-    reference["NumPy integer reference"] -. verifies .-> fpga
-    reference -. verifies .-> mcu
-    classDef artifact fill:#ecfdf5,stroke:#23856c,color:#123c31
-    classDef target fill:#172b36,stroke:#172b36,color:#ffffff
-    classDef check fill:#fff4e6,stroke:#bc7430,color:#663d18
-    class policy,onnx,fpga,mcu artifact
-    class zynq,stm32 target
-    class reference check
-```
+<p align="center">
+  <img src="assets/block_diagram.svg" alt="Figure 1 — From a trained policy to a running robot. An RL policy trained once in FP32 is quantized once to INT16 weights with Q8.8 activations, per-GEMM weight scales and 13 operator descriptors, then executed either by a PL accelerator or by STM32 C kernels." width="100%">
+</p>
 
 - **Programmable execution.** The FPGA sequencer reads operator descriptors from
   instruction RAM. The demonstrated network uses 7 GEMM, 5 ELU, and 1 CONCAT operation;
-  a second checkpoint with different weights and scales passes through the same RTL
-  after re-export.
-- **Deterministic inference.** An 8×8 INT16 MAC array with INT48 accumulation executes
-  the deployed policy in 1,799 PL cycles, without data-dependent branches.
+  a second checkpoint with different weights and scales passes through the same RTL after
+  re-export.
+- **Deterministic inference.** An 8×8 INT16 MAC array with INT48 accumulation executes the
+  deployed policy in 1,799 PL cycles, without data-dependent branches.
 - **Control-aware evaluation.** Precision experiments measure balancing and command
   tracking in closed-loop simulation, alongside numerical agreement.
 
@@ -140,10 +131,12 @@ See the [architecture](docs/ARCHITECTURE.md),
 [policy-to-accelerator mapping](docs/SOLID_POLICY_DEPLOYMENT_MAPPING.md), and
 [second-checkpoint audit](docs/RELEASE_CANDIDATE.md#4-defect-found-diagnosed-and-fixed--in-the-testbench-not-the-rtl).
 
-## Hardware results
+---
 
-The same **38,400-MAC policy** runs on both targets. These are recorded hardware
-results; the quickstart above performs host verification.
+## The result.
+
+The same **38,400-MAC policy**, on both targets. These are recorded hardware results; the
+quickstart above performs host verification.
 
 | Timing boundary | Zynq-7000 · 100 MHz PL | STM32H723 · 480 MHz | Speedup |
 | :--- | ---: | ---: | ---: |
@@ -177,7 +170,17 @@ must leave caches and instruction RAM untouched during an automatic sequence. Fu
 
 </details>
 
-### Bit-exact verification
+---
+
+## Every number has a log.
+
+Five implementations of one arithmetic contract — and one arbiter that decides what
+"correct" means. The FPGA exporter shares no code with the quantization library, yet
+derives the same program and the same per-layer scales.
+
+<p align="center">
+  <img src="assets/verification_chain.svg" alt="Figure 3 — One arithmetic, five implementations. A NumPy integer reference acts as the arbiter: PyTorch fake-quant matches 9 of 9 tensors over 4000 samples on the host, the FPGA descriptors export 13 instructions and 7 weight fractional bits on the host, and both STM32 C paths report 0 mismatches over 24 golden vectors on silicon." width="100%">
+</p>
 
 | Check | Recorded result |
 | :--- | :--- |
@@ -204,11 +207,17 @@ scope and the testbench defect it found and fixed.
 
 </details>
 
-## Control quality
+---
 
-**W16A16 is the deployed baseline.** In the recorded precision sweep, reducing weight
-precision to 8 bits preserved control success. Reducing activations to 8 bits appeared
-to destroy it — until the activation scales were recalibrated.
+## Where it breaks.
+
+**The cliff is at 4-bit weights, not 8-bit activations.** In the recorded precision sweep,
+reducing weight precision to 8 bits preserved control success. Reducing *activations* to
+8 bits appeared to destroy it — until the activation scales were recalibrated.
+
+<p align="center">
+  <img src="assets/precision_cliff.svg" alt="Figure 4 — Closed-loop control success by precision and calibration. FP32, W16A16, W8A16 and W8A8 with 99.5th-percentile scales all hold success at 1.000; W8A8 with peak-based scales collapses to 0.041 and W4A8 to 0.000." width="100%">
+</p>
 
 | Precision | Activation scales | Mean control success | Mean wheel support | Model bytes |
 | :--- | :--- | ---: | ---: | ---: |
@@ -245,18 +254,30 @@ verified against the RTL, but tensors feeding an ELU still need `AFFINE` convers
 pairs that are not yet emitted. Nothing below W16A16 has run on hardware. See
 [the deployability analysis](docs/qat_failure/goal6_root_cause.md#12-can-any-of-this-actually-be-deployed).
 
-**Why didn't W8A8 QAT recover control?** Three interventions were tried and all three
-failed with their targets verifiably controlled: fixing the learning rate, freezing the
-encoder bit-identically for 2000 iterations, and anchoring the policy to a frozen FP32
-teacher. Measured without any RL in the loop, W8A16 fits the FP32 policy to within PPO's
-own KL threshold and W8A8 cannot get within 32× of it — so QAT fails on a
-representational limit, not an optimizer pathology. Most of the collapse that motivated
-the investigation was the calibration above. Read the
-[root-cause analysis](docs/qat_failure/goal6_root_cause.md),
-[QAT findings](docs/QAT_RESULTS.md), and
-[research record](docs/qat_failure/), including failed hypotheses and retractions.
+---
 
-## Explore the project
+## Why quantization-aware training could not recover control.
+
+Three interventions were tried, and all three failed with their targets verifiably
+controlled: fixing the learning rate, freezing the encoder bit-identically for 2000
+iterations, and anchoring the policy to a frozen FP32 teacher.
+
+<p align="center">
+  <img src="assets/qat_kl_mechanism.svg" alt="Figure 6 — The quantization KL floor against PPO's controller. Measured without any reinforcement learning in the loop, W8A16 fits the FP32 policy to within PPO's own KL threshold, while W8A8 cannot get within 32× of it." width="100%">
+</p>
+
+Measured without any RL in the loop, W8A16 fits the FP32 policy to within PPO's own KL
+threshold and W8A8 cannot get within 32× of it — so QAT fails on a representational limit,
+not an optimizer pathology. Most of the collapse that motivated the investigation was the
+calibration above.
+
+Read the [root-cause analysis](docs/qat_failure/goal6_root_cause.md),
+[QAT findings](docs/QAT_RESULTS.md), and [research record](docs/qat_failure/), including
+failed hypotheses and retractions.
+
+---
+
+## Go deeper.
 
 | I want to… | Start here |
 | :--- | :--- |
@@ -271,11 +292,6 @@ the investigation was the calibration above. Read the
 Architecture, hardware, and knowledge-transfer notes include Chinese prose; technical
 identifiers and code remain in English.
 
-Found an issue or want to improve a backend?
-[Open an issue](https://github.com/Functionhx/RoboAccel/issues) or a pull request.
-Include the command, model configuration, tool versions, and expected versus observed
-output so the result can be reproduced.
-
 ## License and attribution
 
 [MIT](LICENSE). The accelerator derives from `rl_on_fpga` (© 2026 DreamChaser), with the
@@ -284,3 +300,13 @@ original copyright preserved.
 The training environment and robot assets are external dependencies and are not
 included; this repository ships the adapters. STM32 hardware builds also need external
 ST HAL sources and an ARM toolchain. See [NOTICE.md](NOTICE.md).
+
+---
+
+<p align="center">
+  <strong>Reproducing a result and getting something different?</strong><br>
+  <a href="https://github.com/Functionhx/RoboAccel/issues">Open an issue</a> ·
+  <a href="https://github.com/Functionhx/RoboAccel/pulls">Open a pull request</a><br>
+  Include the command, model configuration, tool versions, and expected versus observed
+  output — a result nobody else can reproduce is not yet a result.
+</p>
