@@ -292,13 +292,27 @@ failed hypotheses and retractions.
 Architecture, hardware, and knowledge-transfer notes include Chinese prose; technical
 identifiers and code remain in English.
 
+## Third-party projects
+
+[ActuateX](https://github.com/Functionhx/actuatex) is available as a pinned Git
+submodule at [`third_party/actuatex`](third_party/actuatex). It provides
+reinforcement-learning training and evaluation across Isaac Gym, Isaac Lab,
+and MuJoCo.
+
+```bash
+git submodule update --init --recursive third_party/actuatex
+```
+
+See the [third-party guide](third_party/README.md) for setup and scope.
+
 ## License and attribution
 
 [MIT](LICENSE). The accelerator derives from `rl_on_fpga` (© 2026 DreamChaser), with the
 original copyright preserved.
 
-The training environment and robot assets are external dependencies and are not
-included; this repository ships the adapters. STM32 hardware builds also need external
+The wheel-legged training environment and robot assets used for the recorded
+results remain external dependencies; this repository ships the adapters.
+ActuateX is a separate MIT-licensed third-party project. STM32 hardware builds also need external
 ST HAL sources and an ARM toolchain. See [NOTICE.md](NOTICE.md).
 
 ---

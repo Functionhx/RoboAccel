@@ -5,6 +5,17 @@ The RoboAccel accelerator RTL, testbenches, exporter and PS software derive
 from `rl_on_fpga` (MIT, © 2026 DreamChaser). That licence and copyright are
 preserved in `LICENSE`.
 
+## ActuateX — pinned third-party submodule
+
+[`third_party/actuatex`](third_party/actuatex) references
+[ActuateX](https://github.com/Functionhx/actuatex), MIT licensed,
+Copyright (c) 2026 Yuchen Fan. Its license and attribution remain in the
+submodule's `LICENSE`. Simulator dependencies have their own installation
+requirements and terms; see ActuateX's documentation.
+
+ActuateX is a separate training and evaluation framework, not the wheel-legged
+environment used for the recorded RoboAccel results below.
+
 ## NOT included — external dependency, deliberately
 The reinforcement-learning environment, PPO implementation and robot assets
 used to train the policies are **not** part of this repository and are **not

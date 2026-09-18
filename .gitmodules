@@ -1,0 +1,3 @@
+[submodule "third_party/actuatex"]
+	path = third_party/actuatex
+	url = https://github.com/Functionhx/actuatex.git
