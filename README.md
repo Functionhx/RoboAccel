@@ -37,6 +37,11 @@ programmable accelerator in programmable logic, once as hand-written C kernels.
 | :---: | :---: | :---: | :---: |
 | FPGA pure inference at 100 MHz PL | faster than the same policy on Cortex-M7 | inferences in one endurance run, zero failures | mismatches across 24 golden vectors, on silicon |
 
+**7020 update · October 2026:** the same INT16 policy now runs in **9.359 µs**
+end to end on the HelloZynq / Luban 7020 board, with **1,048,576 consecutive
+inferences checked against the integer reference, zero errors**.
+[7010 → 7020 comparison →](#7020-comparison)
+
 Nothing above is estimated. Every figure on this page is backed by a raw log, a
 reproducible command, or a testbench — and where a result later turned out to be wrong,
 the correction is still in the repository. That is the point.
@@ -87,8 +92,8 @@ Checkpoint export, additional test fixtures, calibration, and board setup live i
 
 ## Built, flashed, measured.
 
-Two boards, one arithmetic contract. These are the physical units every number below comes
-from.
+Two FPGA boards and a Cortex-M7 board, one arithmetic contract. Recorded results
+identify the board, build, and measurement boundary used.
 
 <p align="center">
   <img src="assets/hardware/mini7010-zynq.jpg" height="300" alt="MINI_7010 Zynq-7000 board powering up with its status LED lit">
@@ -96,12 +101,20 @@ from.
   <img src="assets/hardware/stm32h723.jpg" height="300" alt="STM32H723VGT6 board with motor, CAN, UART and power connectors populated">
 </p>
 
+<p align="center">
+  <img src="assets/hardware/luban7020-zynq.webp" width="760" alt="HelloZynq / Luban 7020 board, showing the XC7Z020 in a CLG484 package, DDR, JTAG, USB UART, Ethernet and HDMI connectors">
+  <br><sub>HelloZynq / Luban 7020 — the board used for the October 2026 validation.
+  Photo resized to 1600 × 1205 and compressed to 282 KB before upload.</sub>
+</p>
+
 | | Deployed configuration |
 | :--- | :--- |
-| **FPGA** | MINI_7010 · XC7Z010CLG400 · 100 MHz PL |
+| **FPGA · historical baseline** | MINI_7010 · XC7Z010CLG400 · 100 MHz PL |
+| **FPGA · optimized 7020 build** | HelloZynq / Luban · XC7Z020CLG484-2 · 166.667 MHz PL · 766.667 MHz CPU |
 | **MCU** | STM32H723VGT6 · 480 MHz · scalar and `SMLALD` SIMD kernels |
 | Arithmetic | INT16 weights · Q8.8 activations and bias · INT48 accumulation |
-| Compute | 72 DSP48E1 — 64 for GEMM, 8 for NORM |
+| Compute · original 7010 build | 72 DSP48E1 — 64 for GEMM, 8 for NORM |
+| Compute · optimized 7020 build | 132 DSP48E1 total — two 8×8 GEMM arrays use 128 |
 | On-chip storage | 512 × 128-bit vector cache; 8 banks of 1280 × 128-bit weights |
 | Program storage | 32 × 128-bit instruction RAM; 13 descriptors used |
 | Boot and readback | JTAG boot; results read through a JTAG mailbox |
@@ -122,8 +135,9 @@ against it — that single decision is what makes the two targets comparable at 
   instruction RAM. The demonstrated network uses 7 GEMM, 5 ELU, and 1 CONCAT operation;
   a second checkpoint with different weights and scales passes through the same RTL after
   re-export.
-- **Deterministic inference.** An 8×8 INT16 MAC array with INT48 accumulation executes the
-  deployed policy in 1,799 PL cycles, without data-dependent branches.
+- **Deterministic inference.** The original 8×8 INT16 MAC array uses INT48 accumulation
+  and a 1,799-cycle policy schedule. The optimized 7020 build pairs two arrays and
+  streams ELU words; its hardware counter records 1,002 sequence-busy cycles.
 - **Control-aware evaluation.** Precision experiments measure balancing and command
   tracking in closed-loop simulation, alongside numerical agreement.
 
@@ -138,7 +152,7 @@ See the [architecture](docs/ARCHITECTURE.md),
 The same **38,400-MAC policy**, on both targets. These are recorded hardware results; the
 quickstart above performs host verification.
 
-| Timing boundary | Zynq-7000 · 100 MHz PL | STM32H723 · 480 MHz | Speedup |
+| Timing boundary | MINI_7010 baseline · 100 MHz PL | STM32H723 · 480 MHz | Speedup |
 | :--- | ---: | ---: | ---: |
 | **Pure inference (T1)** | **17.99 µs** | 259.09 µs | **14.4×** |
 | Observation → action (T3) | 46.75–46.79 µs | 260.82 µs | **5.6×** |
@@ -151,6 +165,47 @@ FPGA T3 is from five batches of 100 inferences on MINI_7010 with Vivado/Vitis 20
 STM32 timing uses DWT CYCCNT over 200 runs, with weights and activations in DTCM.
 Sources: [FPGA board log](fpga/docs/11_mini7010_vivado2026_port.md),
 [measurement audit](docs/EVIDENCE.md#hardware-performance).
+
+<a name="7020-comparison"></a>
+
+### 7010 → 7020: the same policy with a faster execution path
+
+The October 7, 2026 build keeps the same **38,400-MAC model, INT16 weights,
+Q8.8 activations/bias, and INT48 accumulation**. Inputs are 25 observations plus
+125 history values; outputs are six actions.
+
+| Measurement | MINI_7010 · historical baseline | Luban 7020 · optimized build |
+| :--- | ---: | ---: |
+| CPU / PL clocks | 666.667 / 100 MHz | 766.667 / 166.667 MHz |
+| **Complete INT16 input → action, mean** | **46.766 µs** | **9.359 µs** |
+| Complete call, P99 | No per-call distribution recorded | **9.446 µs** |
+| PL computation | 17.99 µs, original 1,799-cycle schedule | **6.012 µs**, 1,002 hardware-counted busy cycles |
+| GEMM arrays | One 8×8 array | Two 8×8 arrays, up to 128 MAC per accepted cycle |
+| Available DSP48E1 | 80 | 220 |
+| Consecutive reference-checked stress calls in this run | Not rerun on 7010 | **1,048,576 · zero errors** |
+
+The complete-call reduction is **4.997×**. It combines more compute parallelism,
+higher clocks, streamed activations, input-word commits using four writes, and
+buffered **Device Memory** MMIO. The same 7020 bitstream and ELF measured
+**17.999 µs** with Strongly Ordered MMIO versus **9.359 µs** with Device MMIO;
+software access policy accounts for a substantial part of the gain.
+
+The 7010 baseline is a historical batch of 100 fixed-input calls; 7020 timing
+uses 4,096 calls per mode over 256 different inputs. The 7010 board was not
+retested in this session. The stress test cycles those 256 inputs, rather than
+claiming a million independently sampled inputs. Complete calls include input
+packing, PS-PL transfers, start/polling, and output readback; they start from
+already quantized INT16 inputs.
+
+All six outputs were compared element by element with an independent NumPy
+INT64 reference. The final build also passed **21,808 cache-word readbacks**,
+**16 GEMM outputs across the 1023/1024 cache boundary**, and **9 VECTOR/SFU
+self-tests**. Routed setup and hold slack are **+0.093 ns / +0.054 ns**.
+Failed 180/200 MHz timing candidates were excluded from deployment.
+
+[Detailed board comparison and build scope](fpga/docs/13_luban7020_hardware.md) ·
+[Raw timing and verification data](docs/results/luban7020/) ·
+[7010 historical mailbox](docs/results/luban7020/mini7010_baseline_20260906.txt)
 
 <details>
 <summary><strong>Endurance runs — 40,000 inferences, zero failures</strong></summary>
@@ -284,6 +339,7 @@ failed hypotheses and retractions.
 | Export a checkpoint or prepare a board | [Deployment guide](docs/GETTING_STARTED.md) |
 | Understand the arithmetic and component interfaces | [Architecture](docs/ARCHITECTURE.md) · [Integer reference](quantization/roboaccel_quant/) |
 | Work on the FPGA | [RTL](fpga/rtl/) · [Testbenches](fpga/tb/) · [Register map](fpga/docs/04_register_map.md) |
+| Inspect the 7020 deployment and 7010 comparison | [7020 board report](fpga/docs/13_luban7020_hardware.md) · [Raw board evidence](docs/results/luban7020/) |
 | Work on the MCU | [C kernels](stm32/src/) · [Build and flash scripts](stm32/scripts/) |
 | Reproduce quantization experiments | [QAT reproduction](docs/REPRODUCE_QAT.md) · [Training adapters](training/scripts/) |
 | Check a claim or reproduce verification | [Evidence audit](docs/EVIDENCE.md) · [Release audit](docs/RELEASE_CANDIDATE.md) · [Raw results](docs/results/) |

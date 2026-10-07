@@ -20,6 +20,26 @@ classification. The rule this file enforces:
 
 ## Hardware performance
 
+### October 2026: optimized Luban 7020
+
+| Claim | Class | Evidence |
+|---|---|---|
+| Complete prequantized-INT16-input → action mean **9.359 µs**, P99 **9.446 µs** | **reproduced** | [4,096-sample mode statistics and raw words](results/luban7020/optimized_166mhz.json), [release re-verification](results/luban7020/release_verification.json) |
+| **1,002 PL busy cycles / 6.012 µs** at 166.667 MHz | **measured** | Hardware counter in the same mailbox; excludes CPU transfer/launch/polling |
+| **1,048,576 stress inferences, zero errors** | **reproduced** | Same artifacts; 256 varied inputs repeated, every output compared |
+| Historical 7010 mean **46.766 µs**, giving **4.997×** total-build improvement | **measured**, comparison scope qualified | [Original 100-call mailbox](results/luban7020/mini7010_baseline_20260906.txt); historical fixed-input batch versus newer varied-input firmware, not an isolated chip experiment |
+| Same bit/ELF: Strongly Ordered **17.999 µs** → Device Memory **9.359 µs** | **measured**, controlled access-policy comparison | [MMIO control](results/luban7020/strongly_ordered_mmio.json) versus optimized data; actual MMU attributes 0xC02 / 0xC06 |
+| WNS **+0.093 ns**, WHS **+0.054 ns**, 132 DSP48E1 | **measured** | [Routed timing](results/luban7020/timing_summary.rpt), [utilization](results/luban7020/utilization.rpt) |
+
+The 7020 update retains the model hash and INT16 numerical contract. Its total
+gain combines parallel MAC arrays, clock and pipeline changes, input-window
+commits, and CPU MMIO buffering. Power, cold power-cycle startup, and a matched
+new-firmware 7010 run remain unmeasured. The optimized build is identified by
+its hashes; this documentation change adds evidence rather than replacing the
+reference RTL used by the quickstart. Full [board comparison](../fpga/docs/13_luban7020_hardware.md).
+
+### Original 7010 / Cortex-M7 evidence
+
 | # | Claim | Class | Source |
 |---|---|---|---|
 | H1 | STM32H723 pure inference **259.09 µs / 124,363 cycles** | **measured** | DWT CYCCNT on silicon, 200 runs, JTAG mailbox read-back |

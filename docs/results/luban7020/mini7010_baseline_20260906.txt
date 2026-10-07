@@ -1,0 +1,27 @@
+# Baseline hardware reproduction, MINI_7010 over JTAG, 2026-09-06
+# bitstream 02_vivado/mini7010_output/rl_system_mini7010.bit (rebuilt this session)
+# elf       03_vitis/mini7010_build/rl_policy_app_mini7010.elf (rebuilt this session)
+jtag targets:
+  1  Xilinx HW-Z1-ZCU104 FT4232H 15051A
+     2  arm_dap (idcode 4ba00477 irlen 4)
+     3  xc7z010 (idcode 13722093 irlen 6 fpga)
+=== jtag_smoke_mini7010.tcl ===
+ACCEL_VERSION=0x00010002
+VECTOR_READ0=0x11223344
+VECTOR_READ1=0x55667788
+VECTOR_READ2=0x99AABBCC
+VECTOR_READ3=0xDDEEFF00
+ACCEL_STATUS=0x00000000
+JTAG_SMOKE_STATUS=SUCCESS
+=== run_jtag_mini7010.tcl ===
+DDR_SMOKE=0xA55A3CC3
+MINI7010_RUN_STATUS=STARTED
+=== read_mailbox_mini7010.sh ===
+MAILBOX_MAGIC=0x524C4D42
+MAILBOX_BATCH=6
+MAILBOX_100_RUNS_US=4676
+MAILBOX_100_RUNS_TIMER_TICKS=1558877
+MAILBOX_LAST_WAIT_POLLS=120
+MAILBOX_ERRORS=0
+MAILBOX_ACTIONS=543 790 74 635 478 -796
+MAILBOX_STATUS=PASS
